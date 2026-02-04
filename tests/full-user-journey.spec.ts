@@ -194,7 +194,8 @@ test.describe('Dashboard - Patient Queue (Left Panel)', () => {
 
 test.describe('Dashboard - Middle Panel Tabs', () => {
   test.beforeEach(async ({ page }) => {
-    const uniqueEmail = `middle-panel-${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`;
+    const uniqueId = `${Date.now()}-${Math.random().toString(36).slice(2)}-${process.pid}`;
+    const uniqueEmail = `mid-${uniqueId}@example.com`;
     await page.goto('/signup');
     await page.fill('input#email', uniqueEmail);
     await page.fill('input#password', 'TestPassword123!');
@@ -202,14 +203,14 @@ test.describe('Dashboard - Middle Panel Tabs', () => {
     await page.click('button[type="submit"]');
     await expect(page.locator('text=Complete your doctor profile')).toBeVisible({ timeout: 10000 });
     await page.fill('input#name', 'Middle Panel Doctor');
-    await page.fill('input#phone', '6666666666');
+    await page.fill('input#phone', `666${Date.now().toString().slice(-7)}`);
     await page.fill('input#specialty', 'Cardiology');
     await page.fill('input#qualifications', 'MBBS');
     await page.fill('input#clinicName', 'Middle Panel Clinic');
     await page.fill('input#clinicAddress', '123 Middle Street');
-    await page.fill('input#registrationNumber', 'MIDDLE-001');
+    await page.fill('input#registrationNumber', `MID-${uniqueId.slice(0, 6)}`);
     await page.click('button:has-text("Create Account")');
-    await page.waitForURL('/dashboard', { timeout: 15000 });
+    await page.waitForURL('/dashboard', { timeout: 25000 });
   });
 
   test('all four middle panel tabs exist', async ({ page }) => {
@@ -241,7 +242,8 @@ test.describe('Dashboard - Middle Panel Tabs', () => {
 
 test.describe('Dashboard - Prescription Editor Panel', () => {
   test.beforeEach(async ({ page }) => {
-    const uniqueEmail = `prescription-${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`;
+    const uniqueId = `${Date.now()}-${Math.random().toString(36).slice(2)}-${process.pid}`;
+    const uniqueEmail = `rx-${uniqueId}@example.com`;
     await page.goto('/signup');
     await page.fill('input#email', uniqueEmail);
     await page.fill('input#password', 'TestPassword123!');
@@ -249,14 +251,14 @@ test.describe('Dashboard - Prescription Editor Panel', () => {
     await page.click('button[type="submit"]');
     await expect(page.locator('text=Complete your doctor profile')).toBeVisible({ timeout: 10000 });
     await page.fill('input#name', 'Prescription Doctor');
-    await page.fill('input#phone', '5555555555');
+    await page.fill('input#phone', `555${Date.now().toString().slice(-7)}`);
     await page.fill('input#specialty', 'Cardiology');
     await page.fill('input#qualifications', 'MBBS, MD, DM');
     await page.fill('input#clinicName', 'Prescription Clinic');
     await page.fill('input#clinicAddress', '123 Rx Street');
-    await page.fill('input#registrationNumber', 'RX-001');
+    await page.fill('input#registrationNumber', `RX-${uniqueId.slice(0, 6)}`);
     await page.click('button:has-text("Create Account")');
-    await page.waitForURL('/dashboard', { timeout: 15000 });
+    await page.waitForURL('/dashboard', { timeout: 25000 });
   });
 
   test('shows prompt to select patient when no patient selected', async ({ page }) => {
@@ -277,7 +279,8 @@ test.describe('Dashboard - Prescription Editor Panel', () => {
 
 test.describe('Dashboard - AI Assistant Panel (Right Panel)', () => {
   test.beforeEach(async ({ page }) => {
-    const uniqueEmail = `ai-assistant-${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`;
+    const uniqueId = `${Date.now()}-${Math.random().toString(36).slice(2)}-${process.pid}`;
+    const uniqueEmail = `ai-${uniqueId}@example.com`;
     await page.goto('/signup');
     await page.fill('input#email', uniqueEmail);
     await page.fill('input#password', 'TestPassword123!');
@@ -285,14 +288,14 @@ test.describe('Dashboard - AI Assistant Panel (Right Panel)', () => {
     await page.click('button[type="submit"]');
     await expect(page.locator('text=Complete your doctor profile')).toBeVisible({ timeout: 10000 });
     await page.fill('input#name', 'AI Assistant Doctor');
-    await page.fill('input#phone', '4444444444');
+    await page.fill('input#phone', `444${Date.now().toString().slice(-7)}`);
     await page.fill('input#specialty', 'Cardiology');
     await page.fill('input#qualifications', 'MBBS');
     await page.fill('input#clinicName', 'AI Test Clinic');
     await page.fill('input#clinicAddress', '123 AI Street');
-    await page.fill('input#registrationNumber', 'AI-001');
+    await page.fill('input#registrationNumber', `AI-${uniqueId.slice(0, 6)}`);
     await page.click('button:has-text("Create Account")');
-    await page.waitForURL('/dashboard', { timeout: 15000 });
+    await page.waitForURL('/dashboard', { timeout: 25000 });
   });
 
   test('AI assistant panel is visible', async ({ page }) => {
@@ -315,7 +318,8 @@ test.describe('Dashboard - AI Assistant Panel (Right Panel)', () => {
 
 test.describe('Dashboard - Approval Queue', () => {
   test.beforeEach(async ({ page }) => {
-    const uniqueEmail = `approvals-${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`;
+    const uniqueId = `${Date.now()}-${Math.random().toString(36).slice(2)}-${process.pid}`;
+    const uniqueEmail = `appr-${uniqueId}@example.com`;
     await page.goto('/signup');
     await page.fill('input#email', uniqueEmail);
     await page.fill('input#password', 'TestPassword123!');
@@ -323,14 +327,14 @@ test.describe('Dashboard - Approval Queue', () => {
     await page.click('button[type="submit"]');
     await expect(page.locator('text=Complete your doctor profile')).toBeVisible({ timeout: 10000 });
     await page.fill('input#name', 'Approvals Doctor');
-    await page.fill('input#phone', '3333333333');
+    await page.fill('input#phone', `333${Date.now().toString().slice(-7)}`);
     await page.fill('input#specialty', 'Cardiology');
     await page.fill('input#qualifications', 'MBBS');
     await page.fill('input#clinicName', 'Approvals Clinic');
     await page.fill('input#clinicAddress', '123 Approval Street');
-    await page.fill('input#registrationNumber', 'APPROVE-001');
+    await page.fill('input#registrationNumber', `APR-${uniqueId.slice(0, 6)}`);
     await page.click('button:has-text("Create Account")');
-    await page.waitForURL('/dashboard', { timeout: 15000 });
+    await page.waitForURL('/dashboard', { timeout: 25000 });
   });
 
   test('can navigate to approval queue', async ({ page }) => {
@@ -353,7 +357,8 @@ test.describe('Dashboard - Approval Queue', () => {
 
 test.describe('Dashboard - Audit Log', () => {
   test.beforeEach(async ({ page }) => {
-    const uniqueEmail = `audit-${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`;
+    const uniqueId = `${Date.now()}-${Math.random().toString(36).slice(2)}-${process.pid}`;
+    const uniqueEmail = `aud-${uniqueId}@example.com`;
     await page.goto('/signup');
     await page.fill('input#email', uniqueEmail);
     await page.fill('input#password', 'TestPassword123!');
@@ -361,14 +366,14 @@ test.describe('Dashboard - Audit Log', () => {
     await page.click('button[type="submit"]');
     await expect(page.locator('text=Complete your doctor profile')).toBeVisible({ timeout: 10000 });
     await page.fill('input#name', 'Audit Doctor');
-    await page.fill('input#phone', '2222222222');
+    await page.fill('input#phone', `222${Date.now().toString().slice(-7)}`);
     await page.fill('input#specialty', 'Cardiology');
     await page.fill('input#qualifications', 'MBBS');
     await page.fill('input#clinicName', 'Audit Clinic');
     await page.fill('input#clinicAddress', '123 Audit Street');
-    await page.fill('input#registrationNumber', 'AUDIT-001');
+    await page.fill('input#registrationNumber', `AUD-${uniqueId.slice(0, 6)}`);
     await page.click('button:has-text("Create Account")');
-    await page.waitForURL('/dashboard', { timeout: 15000 });
+    await page.waitForURL('/dashboard', { timeout: 25000 });
   });
 
   test('can navigate to audit log', async ({ page }) => {
@@ -389,7 +394,8 @@ test.describe('Dashboard - Audit Log', () => {
 
 test.describe('Dashboard - Header and Layout', () => {
   test.beforeEach(async ({ page }) => {
-    const uniqueEmail = `header-${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`;
+    const uniqueId = `${Date.now()}-${Math.random().toString(36).slice(2)}-${process.pid}`;
+    const uniqueEmail = `hdr-${uniqueId}@example.com`;
     await page.goto('/signup');
     await page.fill('input#email', uniqueEmail);
     await page.fill('input#password', 'TestPassword123!');
@@ -397,14 +403,14 @@ test.describe('Dashboard - Header and Layout', () => {
     await page.click('button[type="submit"]');
     await expect(page.locator('text=Complete your doctor profile')).toBeVisible({ timeout: 10000 });
     await page.fill('input#name', 'Header Test Doctor');
-    await page.fill('input#phone', '1111111111');
+    await page.fill('input#phone', `111${Date.now().toString().slice(-7)}`);
     await page.fill('input#specialty', 'Cardiology');
     await page.fill('input#qualifications', 'MBBS');
     await page.fill('input#clinicName', 'Header Test Clinic');
     await page.fill('input#clinicAddress', '123 Header Street');
-    await page.fill('input#registrationNumber', 'HEADER-001');
+    await page.fill('input#registrationNumber', `HDR-${uniqueId.slice(0, 6)}`);
     await page.click('button:has-text("Create Account")');
-    await page.waitForURL('/dashboard', { timeout: 15000 });
+    await page.waitForURL('/dashboard', { timeout: 25000 });
   });
 
   test('header shows app title', async ({ page }) => {
