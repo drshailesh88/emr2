@@ -2,8 +2,11 @@
 import makeWASocket, {
   DisconnectReason,
   fetchLatestBaileysVersion,
+  downloadContentFromMessage,
   type WASocket,
   type BaileysEventMap,
+  type DownloadableMessage,
+  type MediaType,
 } from "@whiskeysockets/baileys";
 import { Boom } from "@hapi/boom";
 import { useConvexAuthState, syncConnectionStatus } from "./auth-state";
@@ -180,6 +183,97 @@ export async function sendMediaMessage(
     logger.error({ error, jid, mediaType }, "Failed to send media");
     throw error;
   }
+}
+
+// Download media from a WhatsApp message
+export async function downloadMedia(
+  message: DownloadableMessage,
+  mediaType: MediaType
+): Promise<Buffer | null> {
+  try {
+    const stream = await downloadContentFromMessage(message, mediaType);
+    const chunks: Buffer[] = [];
+
+    for await (const chunk of stream) {
+      chunks.push(chunk);
+    }
+
+    const buffer = Buffer.concat(chunks);
+    logger.info({ mediaType, size: buffer.length }, "Media downloaded");
+    return buffer;
+  } catch (error) {
+    logger.error({ error, mediaType }, "Failed to download media");
+    return null;
+  }
+}
+
+// Get media message details
+export function getMediaDetails(msg: BaileysEventMap["messages.upsert"]["messages"][0]): {
+  mediaType: MediaType | null;
+  mediaMessage: DownloadableMessage | null;
+  mimeType: string | null;
+  fileName: string | null;
+  caption: string | null;
+} {
+  const message = msg.message;
+
+  if (message?.imageMessage) {
+    return {
+      mediaType: "image",
+      mediaMessage: message.imageMessage as DownloadableMessage,
+      mimeType: message.imageMessage.mimetype || "image/jpeg",
+      fileName: null,
+      caption: message.imageMessage.caption || null,
+    };
+  }
+
+  if (message?.documentMessage) {
+    return {
+      mediaType: "document",
+      mediaMessage: message.documentMessage as DownloadableMessage,
+      mimeType: message.documentMessage.mimetype || "application/octet-stream",
+      fileName: message.documentMessage.fileName || "document",
+      caption: message.documentMessage.caption || null,
+    };
+  }
+
+  if (message?.audioMessage) {
+    return {
+      mediaType: "audio",
+      mediaMessage: message.audioMessage as DownloadableMessage,
+      mimeType: message.audioMessage.mimetype || "audio/ogg",
+      fileName: null,
+      caption: null,
+    };
+  }
+
+  if (message?.videoMessage) {
+    return {
+      mediaType: "video",
+      mediaMessage: message.videoMessage as DownloadableMessage,
+      mimeType: message.videoMessage.mimetype || "video/mp4",
+      fileName: null,
+      caption: message.videoMessage.caption || null,
+    };
+  }
+
+  if (message?.stickerMessage) {
+    return {
+      mediaType: "sticker",
+      mediaMessage: message.stickerMessage as DownloadableMessage,
+      mimeType: message.stickerMessage.mimetype || "image/webp",
+      fileName: null,
+      caption: null,
+    };
+  }
+
+  return {
+    mediaType: null,
+    mediaMessage: null,
+    mimeType: null,
+    fileName: null,
+    caption: null,
+  };
 }
 
 // Graceful shutdown

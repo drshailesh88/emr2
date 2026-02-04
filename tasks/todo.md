@@ -1,118 +1,162 @@
 # Doctor Secretary AI - Current TODO
 
 ## Session Goal
-Initialize project infrastructure and complete Week 1-2 foundations.
+Week 6-8: Implement Documents + Records functionality (file uploads, OCR, document management).
 
 ## Current Plan
 
-### Phase 0: Fix Directory Structure
-- [ ] Move Spec Kit files from nested emr2/emr2 to emr2/
-- [ ] Initialize git properly
-- [ ] First commit with all planning documents
+### Week 6-8: Documents + Records
 
-### Phase 1: Project Initialization
-- [ ] Initialize Convex project
-- [ ] Create database schema from docs/plan.md
-- [ ] Initialize Next.js 14 with App Router
-- [ ] Install and configure shadcn/ui + Tailwind
-- [ ] Set up Convex Auth for doctors
-- [ ] Create basic 3-panel EMR layout (empty structure)
-- [ ] Deploy to Railway (basic)
-- [ ] Set up Playwright for testing
-- [ ] Write first smoke test (app loads)
+#### Task 1: Implement file upload in WhatsApp adapter
+- [ ] Add media message handling in WhatsApp adapter
+- [ ] Download received images/PDFs from WhatsApp
+- [ ] Store media metadata in Convex
+- [ ] Emit events for document processing pipeline
+- [ ] Test with manual image/PDF sends
+
+#### Task 2: Create document ingestion service
+- [ ] Create convex/documents.ts schema and mutations
+- [ ] Build document processor service in services/
+- [ ] Handle image and PDF file types
+- [ ] Extract basic metadata (size, type, timestamp)
+- [ ] Link documents to patient records
+- [ ] Test document storage flow
+
+#### Task 3: Implement OCR with Claude Vision
+- [ ] Create OCR service using Claude Sonnet 4 Vision
+- [ ] Process images to extract text
+- [ ] Handle prescriptions, lab reports, medical records
+- [ ] Store extracted text with document
+- [ ] Parse structured data where possible
+- [ ] Test with sample medical documents
+
+#### Task 4: Create Convex file storage integration
+- [ ] Set up Convex file storage
+- [ ] Create upload/download mutations
+- [ ] Generate secure URLs for file access
+- [ ] Implement file size limits
+- [ ] Handle storage cleanup for deleted documents
+- [ ] Test file storage CRUD
+
+#### Task 5: Build document viewer in EMR dashboard
+- [ ] Add Documents tab/section to dashboard
+- [ ] Create document list view with thumbnails
+- [ ] Implement document preview modal
+- [ ] Show extracted OCR text alongside document
+- [ ] Add document metadata display
+- [ ] Test viewer with various file types
+
+#### Task 6: Implement patient record search
+- [ ] Create full-text search on documents
+- [ ] Search by patient name, document content, date
+- [ ] Add search UI to dashboard
+- [ ] Implement search result highlighting
+- [ ] Test search functionality
+
+#### Task 7: Build multi-document summarization
+- [ ] Create AI service for document summarization
+- [ ] Summarize multiple documents per patient
+- [ ] Generate timeline view of patient history
+- [ ] Show key findings and trends
+- [ ] Test summarization quality
+
+#### Task 8: Write tests for document flow
+- [ ] Playwright tests for document upload UI
+- [ ] Integration tests for WhatsApp media flow
+- [ ] Tests for OCR processing
+- [ ] Tests for search functionality
+- [ ] End-to-end document journey test
 
 ## In Progress
 
-### Task #11: Build AI Assistant Panel (Parallel Terminal A) ✅
-- [x] Extract AIAssistantPanel to separate component
-- [x] Chat history display with message bubbles (secretary/doctor roles)
-- [x] Input field for doctor commands (enabled when patient selected)
-- [x] Send WhatsApp and Send Email buttons
-- [x] Display patient context banner with allergy warning
-- [x] Placeholder responses with keyword-based demo
-- [x] Test passes → commit
-
-### Task #10: Build Prescription Editor Panel (Parallel Terminal A) ✅
-- [x] Extract PrescriptionEditorPanel to separate component
-- [x] Add form fields: chief complaints, diagnosis, medications
-- [x] Medications: add/remove with name, dosage, frequency, duration, instructions
-- [x] Investigations list with add/remove
-- [x] Follow-up text field
-- [x] Create convex/prescriptions.ts with create/update mutations
-- [x] Wire up form state with save draft functionality
-- [x] Test passes → commit
-
-### Task #9: Build Patient Queue Panel (Parallel Terminal A) ✅
-- [x] Create convex/patients.ts with CRUD + search queries
-- [x] Create convex/appointments.ts with today's appointments + pending requests
-- [x] Extract PatientQueuePanel to separate component
-- [x] Wire up real data from Convex
-- [x] Add patient selection state
-- [x] Write Playwright test
-- [x] Test passes → commit
-
-### Task #8: Build 3-panel EMR Layout (Parallel Terminal A) ✅
-- [x] Create responsive 3-panel flexbox layout on /dashboard
-- [x] Left panel: Patient Queue (256px fixed width, scrollable)
-- [x] Middle panel: Prescription Editor (flexible width, main content)
-- [x] Right panel: AI Assistant (320px fixed width, chat interface)
-- [x] Header bar with doctor name, clinic, and logout
-- [x] Placeholder content in each panel
-- [x] Write Playwright test for layout
-- [x] Test passes → commit
-
-### Task #7: Deploy to Railway ✅
-- [x] Create railway.json configuration
-- [x] Configure build and start commands
-- [x] Set up .env.example for environment variables
-- [x] Test production build locally (passed)
-- [x] All routes compiled: /, /login, /signup, /dashboard
-
-### Testing Tasks (Parallel Terminal B) ✅
-- [x] Set up Playwright testing framework
-  - playwright.config.ts configured for Next.js
-  - Test scripts added to package.json (test, test:ui, test:headed)
-- [x] Write smoke tests (7 tests)
-  - Home page, login page, signup page load correctly
-  - Navigation between pages works
-- [x] Add auth form validation tests (14 tests)
-  - Login: empty validation, input types, button state, links
-  - Signup: step progression, password validation, back button, profile fields
-- [x] Add authenticated dashboard tests (8 tests)
-  - Signup flow, header, 3 panels, search, AI input, logout
-  - Tests skipped by default (need RUN_AUTH_TESTS=true + Convex running)
-- Total: 24 passing tests, 7 skipped (authenticated)
-- Commits: d724c08, d7a2769
+### Task 1: Implement file upload in WhatsApp adapter
+- [x] Add media message handling in WhatsApp adapter (getMediaDetails function)
+- [x] Download received images/PDFs from WhatsApp (downloadMedia function)
+- [x] Store media metadata in Convex (storeDocument mutation)
+- [x] Create convex/documents.ts with full CRUD operations
+- [ ] Test with manual image/PDF sends
 
 ## Completed
 
-### Task #1: Initialize Convex Project ✅
+### Week 1-2: Foundation (COMPLETE)
+
+#### Task #1: Initialize Convex Project ✅
 Commit: c190f16 - Convex backend running locally at http://127.0.0.1:3210
 
-### Task #2: Create Complete Database Schema ✅
+#### Task #2: Create Complete Database Schema ✅
 Commit: d7c0d6a - 9 tables, 26 indexes deployed successfully
 
-### Task #3: Initialize Next.js 14 ✅
+#### Task #3: Initialize Next.js 14 ✅
 Commit: 3dce8b4 - Next.js 16.1.6 running at localhost:3000
 
-### Task #4: shadcn/ui + Tailwind v4 ✅
+#### Task #4: shadcn/ui + Tailwind v4 ✅
 Commit: 0d7f80d - 12 UI components installed, CSS variables configured
 
-### Task #5: Convex Auth ✅
+#### Task #5: Convex Auth ✅
 Commit: 8c69264 - Password auth configured, ConvexAuthProvider ready
 
-### Task #6: Login/Signup Pages ✅
+#### Task #6: Login/Signup Pages ✅
 Commit: 1d03caf - 2-step signup, login, dashboard with auth check
 
-### Task #7: Railway Deployment ✅
+#### Task #7: Railway Deployment ✅
 Commit: f6277ee - railway.json configured, build passes
+
+#### Task #8: Build 3-panel EMR Layout ✅
+Commit: 385b6c7 - Responsive flexbox layout with left/middle/right panels
+
+#### Task #9: Build Patient Queue Panel ✅
+Commit: 14718e2 - Convex patients/appointments CRUD, real data display
+
+#### Task #10: Build Prescription Editor Panel ✅
+Commit: ecaedc3 - Full form with medications, investigations, save draft
+
+#### Task #11: Build AI Assistant Panel ✅
+Commit: 4760004 - Chat interface with doctor/secretary messages
+
+#### Testing Infrastructure ✅
+Commits: d724c08, d7a2769 - 24 passing tests (smoke, auth validation, dashboard)
+
+### Week 3-5: WhatsApp + Triage (COMPLETE)
+
+#### WhatsApp Adapter with Baileys ✅
+Commits: 6c1974f, a960452 - Full WhatsApp connection via Baileys library
+- QR code authentication
+- Message sending/receiving
+- Session persistence
+
+#### Message Intake Pipeline ✅
+Commit: 3e37ca1 - Receive messages → store in Convex → emit events
+
+#### Emergency Keyword Detection & Triage ✅
+Commit: db07511 - Rules-first detection for cardiac emergencies
+- Chest pain, breathlessness, high BP, fainting, cardiac arrest keywords
+- Hindi/English support
+- Immediate escalation flow
+
+#### Approval Queue UI ✅
+Commit: 1af7635 - Dashboard shows pending approvals
+- Approve/reject buttons
+- Message preview
+
+#### Appointment Request Workflow ✅
+Commit: 52e6886 - Natural language appointment parsing
+- Date/time extraction
+- Patient matching
+- Confirmation flow
+
+#### Quick-Reply Approval via WhatsApp ✅
+Commit: cd15ea6 - Doctor can approve messages directly from WhatsApp
+- Reply with "ok" or "approve"
+- Automatic sending to patient
 
 ## Blockers
 <!-- Document any issues preventing progress -->
 
 ## Notes for Next Session
-
-<!-- Important context for continuation -->
+- Week 6-8 focuses on document handling
+- Need to research Convex file storage capabilities
+- OCR will use Claude Vision (Sonnet 4) for text extraction
+- Consider document privacy and access control
 
 ---
-*Last updated: Session not yet started*
+*Last updated: 2024-02-04 - Starting Week 6-8*

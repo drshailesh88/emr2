@@ -20,6 +20,8 @@ import {
   getConnectionStatus,
   sendTextMessage,
   setMessageHandler,
+  downloadMedia,
+  getMediaDetails,
 } from "./socket";
 import {
   storeIncomingMessage,
@@ -29,6 +31,8 @@ import {
   createApprovalNotification,
   markNotificationSent,
   getPendingNotifications,
+  uploadFile,
+  storeDocument,
 } from "./convex-client";
 
 const app = express();
@@ -120,6 +124,24 @@ app.post("/send", async (req, res) => {
     res.status(500).json({ error: "Failed to send message" });
   }
 });
+
+// Helper to get file extension from MIME type
+function getExtensionFromMimeType(mimeType: string): string {
+  const mimeToExt: Record<string, string> = {
+    "image/jpeg": ".jpg",
+    "image/png": ".png",
+    "image/gif": ".gif",
+    "image/webp": ".webp",
+    "application/pdf": ".pdf",
+    "audio/ogg": ".ogg",
+    "audio/mpeg": ".mp3",
+    "audio/mp4": ".m4a",
+    "video/mp4": ".mp4",
+    "application/msword": ".doc",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": ".docx",
+  };
+  return mimeToExt[mimeType] || "";
+}
 
 // Helper to format notification message
 function formatNotificationMessage(
@@ -231,17 +253,11 @@ setMessageHandler(async (m) => {
     }
 
     // Regular patient message handling
-    const hasMedia = !!(
-      msg.message?.imageMessage ||
-      msg.message?.documentMessage ||
-      msg.message?.audioMessage
-    );
+    const mediaDetails = getMediaDetails(msg);
+    const hasMedia = mediaDetails.mediaType !== null;
 
-    // Determine media type
-    let mediaType: string | undefined;
-    if (msg.message?.imageMessage) mediaType = "image";
-    else if (msg.message?.documentMessage) mediaType = "document";
-    else if (msg.message?.audioMessage) mediaType = "audio";
+    // Determine media type for storage
+    let mediaType: string | undefined = mediaDetails.mediaType || undefined;
 
     // Get timestamp (handle both number and object formats)
     let timestamp: number;
@@ -288,6 +304,77 @@ setMessageHandler(async (m) => {
         },
         "Message stored to Convex"
       );
+
+      // Handle media download and storage
+      if (hasMedia && mediaDetails.mediaMessage && mediaDetails.mediaType && result.patientId && result.doctorId) {
+        try {
+          logger.info(
+            { mediaType: mediaDetails.mediaType, mimeType: mediaDetails.mimeType },
+            "Downloading media from WhatsApp"
+          );
+
+          // Download media from WhatsApp
+          const mediaBuffer = await downloadMedia(mediaDetails.mediaMessage, mediaDetails.mediaType);
+
+          if (mediaBuffer) {
+            logger.info(
+              { size: mediaBuffer.length },
+              "Media downloaded, uploading to Convex storage"
+            );
+
+            // Upload to Convex storage
+            const fileId = await uploadFile(mediaBuffer, mediaDetails.mimeType || "application/octet-stream");
+
+            if (fileId) {
+              // Generate filename
+              const extension = getExtensionFromMimeType(mediaDetails.mimeType || "");
+              const fileName = mediaDetails.fileName || `${mediaDetails.mediaType}_${Date.now()}${extension}`;
+
+              // Map media type to document type
+              let fileType: string;
+              if (mediaDetails.mediaType === "image" || mediaDetails.mediaType === "sticker") {
+                fileType = "image";
+              } else if (mediaDetails.mediaType === "document") {
+                // Check if it's a PDF
+                fileType = mediaDetails.mimeType?.includes("pdf") ? "pdf" : "image";
+              } else if (mediaDetails.mediaType === "audio") {
+                fileType = "audio";
+              } else if (mediaDetails.mediaType === "video") {
+                fileType = "video";
+              } else {
+                fileType = "image";
+              }
+
+              // Store document metadata
+              const docResult = await storeDocument({
+                doctorId: result.doctorId,
+                patientId: result.patientId,
+                fileId,
+                fileName,
+                fileType,
+                category: "whatsapp_media",
+                messageId: result.messageId,
+              });
+
+              logger.info(
+                {
+                  documentId: docResult.documentId,
+                  fileId,
+                  fileName,
+                  fileType,
+                },
+                "Document stored to Convex"
+              );
+            } else {
+              logger.error("Failed to upload media to Convex storage");
+            }
+          } else {
+            logger.error("Failed to download media from WhatsApp");
+          }
+        } catch (error) {
+          logger.error({ error }, "Failed to process media attachment");
+        }
+      }
 
       // If this is a new message that requires approval, notify doctor
       if (result.isNew && result.doctorId) {

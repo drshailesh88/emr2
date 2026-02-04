@@ -260,3 +260,71 @@ export async function getPatientPhone(patientId: string): Promise<string | null>
   const result = await callConvex("patients:getPhone", { patientId }, "query");
   return result as string | null;
 }
+
+// Document storage functions
+
+// Generate an upload URL for file storage
+export async function generateUploadUrl(): Promise<string> {
+  const result = await callConvex("documents:generateUploadUrl", {}, "mutation");
+  return result as string;
+}
+
+// Upload file to Convex storage
+export async function uploadFile(buffer: Buffer, mimeType: string): Promise<string | null> {
+  try {
+    // Get upload URL
+    const uploadUrl = await generateUploadUrl();
+
+    // Convert Buffer to Blob for fetch body (works across all environments)
+    const blob = new Blob([buffer], { type: mimeType });
+
+    // Upload the file
+    const response = await fetch(uploadUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": mimeType,
+      },
+      body: blob,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
+    }
+
+    const result = (await response.json()) as { storageId: string };
+    return result.storageId;
+  } catch (error) {
+    console.error("Failed to upload file:", error);
+    return null;
+  }
+}
+
+// Store document metadata in Convex
+export async function storeDocument(args: {
+  doctorId: string;
+  patientId: string;
+  fileId: string;
+  fileName: string;
+  fileType: string;
+  category?: string;
+  messageId?: string;
+}): Promise<{ documentId: string }> {
+  const result = await callConvex("documents:storeDocument", args, "mutation");
+  return result as { documentId: string };
+}
+
+// Update document with extracted text (after OCR)
+export async function updateDocumentText(args: {
+  documentId: string;
+  extractedText: string;
+  summary?: string;
+  category?: string;
+}): Promise<void> {
+  await callConvex("documents:updateExtractedText", args, "mutation");
+}
+
+// Get file URL for viewing
+export async function getFileUrl(fileId: string): Promise<string | null> {
+  const result = await callConvex("documents:getFileUrl", { fileId }, "query");
+  return result as string | null;
+}
