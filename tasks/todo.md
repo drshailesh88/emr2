@@ -23,13 +23,13 @@ Initialize project infrastructure and complete Week 1-2 foundations.
 
 ## In Progress
 
-### Task #5: Set up Convex Auth for doctors ✅
-- [x] Install @convex-dev/auth and dependencies
-- [x] Configure auth in convex/auth.ts
-- [x] Set up password-based authentication
-- [x] Create ConvexAuthProvider wrapper
-- [x] Add auth tables to schema
-- [x] Create users.ts with currentDoctor query
+### Task #6: Create doctor login/signup pages ✅
+- [x] Create /login page with email/password form
+- [x] Create /signup page with 2-step registration
+- [x] Form validation with error handling
+- [x] Loading states during auth operations
+- [x] Redirect to /dashboard after successful auth
+- [x] Create basic /dashboard page with auth check
 
 ## Completed
 
@@ -44,6 +44,9 @@ Commit: 3dce8b4 - Next.js 16.1.6 running at localhost:3000
 
 ### Task #4: shadcn/ui + Tailwind v4 ✅
 Commit: 0d7f80d - 12 UI components installed, CSS variables configured
+
+### Task #5: Convex Auth ✅
+Commit: 8c69264 - Password auth configured, ConvexAuthProvider ready
 
 ## Blockers
 <!-- Document any issues preventing progress -->
