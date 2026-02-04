@@ -288,3 +288,57 @@ export const getPendingPayments = query({
     return enriched;
   },
 });
+
+// Set receipt URL for a completed payment
+export const setReceiptUrl = mutation({
+  args: {
+    paymentId: v.id("payments"),
+    receiptUrl: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const payment = await ctx.db.get(args.paymentId);
+    if (!payment) {
+      throw new Error("Payment not found");
+    }
+
+    await ctx.db.patch(args.paymentId, {
+      receiptUrl: args.receiptUrl,
+    });
+
+    // Log to audit
+    await ctx.db.insert("auditLog", {
+      doctorId: payment.doctorId,
+      action: "receipt_generated",
+      details: JSON.stringify({
+        paymentId: args.paymentId,
+        receiptUrl: args.receiptUrl,
+      }),
+      performedBy: "system",
+      timestamp: Date.now(),
+    });
+  },
+});
+
+// Get payment with full details for receipt generation
+export const getForReceipt = query({
+  args: {
+    paymentId: v.id("payments"),
+  },
+  handler: async (ctx, args) => {
+    const payment = await ctx.db.get(args.paymentId);
+    if (!payment) return null;
+
+    const [patient, doctor, appointment] = await Promise.all([
+      ctx.db.get(payment.patientId),
+      ctx.db.get(payment.doctorId),
+      ctx.db.get(payment.appointmentId),
+    ]);
+
+    return {
+      ...payment,
+      patient,
+      doctor,
+      appointment,
+    };
+  },
+});

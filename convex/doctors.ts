@@ -10,6 +10,14 @@ export const list = query({
   },
 });
 
+// Query to get a doctor by ID
+export const get = query({
+  args: { doctorId: v.id("doctors") },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.doctorId);
+  },
+});
+
 // Query to get a doctor by phone number
 export const getByPhone = query({
   args: { phone: v.string() },
