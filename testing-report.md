@@ -3,10 +3,14 @@
 ## Executive Summary
 
 **Date:** 2026-02-04
-**Total Tests:** 76 Playwright spec tests
-**Passed:** 57
-**Skipped:** 19 (auth-required tests marked for future work)
-**Failed:** 0
+
+### Total Tests: 145
+| Framework | Tests | Passed | Skipped |
+|-----------|-------|--------|---------|
+| Playwright | 101 | 82 | 19 |
+| Vitest | 63 | 63 | 0 |
+
+**Overall: 145 passed, 19 skipped, 0 failed**
 
 ## Critical Bugs Found and Fixed
 
@@ -177,9 +181,34 @@ npx playwright test --headed
 npx playwright test --debug
 ```
 
+## New Test Suites Added
+
+### Payment Tests (11 tests)
+- API endpoint existence verification
+- Schema validation (amounts, expiry, status)
+- UPI link format validation
+- Razorpay link pattern matching
+- Receipt data structure validation
+
+### WhatsApp Tests (14 tests)
+- Phone number normalization (Indian format)
+- Message template interpolation
+- Emergency keyword detection (Hindi/English)
+- Message category validation
+- Approval status validation
+- Intent detection (booking, cancel)
+- Time preference extraction
+
+### Vitest Unit Tests (63 tests)
+- Document processing tests (26 tests)
+- Prescription tests (37 tests)
+
 ## Git Commits Made
 
 1. `a6c6c3a` - fix: race condition in document tab tests
 2. `62a2ea1` - fix: signup race condition - wait for auth state before creating doctor profile
 3. `fac700c` - test: add comprehensive full user journey tests
 4. `637d02b` - test: improve test stability with better selectors and unique identifiers
+5. `7ec7302` - test: improve test reliability with better uniqueness and increased timeouts
+6. `26e678c` - test: add payment and WhatsApp integration tests
+7. `11c2b2b` - fix: configure Playwright to only run .spec.ts files
