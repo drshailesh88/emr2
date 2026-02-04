@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query, MutationCtx } from "./_generated/server";
 import { Id } from "./_generated/dataModel";
+import { detectEmergency, getEmergencyPriority } from "./emergencyDetection";
 
 // Store an incoming WhatsApp message
 export const storeIncomingMessage = mutation({
@@ -50,7 +51,17 @@ export const storeIncomingMessage = mutation({
       lastMessageAt: args.timestamp,
     });
 
-    // Store the message
+    // Run emergency detection (rules-first, no LLM)
+    const emergencyResult = detectEmergency(args.content);
+    const priority = getEmergencyPriority(args.content);
+
+    // Determine triage category
+    let triageCategory: "emergency" | "clinical" | "admin" | undefined = undefined;
+    if (emergencyResult.isEmergency) {
+      triageCategory = "emergency";
+    }
+
+    // Store the message with triage results
     const messageId = await ctx.db.insert("messages", {
       conversationId,
       role: "patient",
@@ -59,10 +70,12 @@ export const storeIncomingMessage = mutation({
       whatsappMessageId: args.whatsappMessageId,
       direction: "inbound",
       requiresApproval: true, // All inbound messages require approval by default
-      // Triage fields will be filled later by triage service
-      priority: undefined,
-      intent: undefined,
-      triageCategory: undefined,
+      // Triage fields from emergency detection
+      priority: priority || undefined,
+      intent: emergencyResult.isEmergency
+        ? `emergency:${emergencyResult.categories.join(",")}`
+        : undefined,
+      triageCategory,
     });
 
     // Log to audit
@@ -79,6 +92,24 @@ export const storeIncomingMessage = mutation({
       timestamp: Date.now(),
     });
 
+    // If emergency detected, log separately for urgent attention
+    if (emergencyResult.isEmergency) {
+      await ctx.db.insert("auditLog", {
+        doctorId,
+        action: "emergency_detected",
+        details: JSON.stringify({
+          messageId,
+          patientId,
+          priority,
+          matchedKeywords: emergencyResult.matchedKeywords,
+          categories: emergencyResult.categories,
+          confidence: emergencyResult.confidence,
+        }),
+        performedBy: "system",
+        timestamp: Date.now(),
+      });
+    }
+
     return {
       messageId,
       patientId,
@@ -86,6 +117,10 @@ export const storeIncomingMessage = mutation({
       doctorId,
       isNew: true,
       isNewPatient,
+      // Emergency detection results
+      isEmergency: emergencyResult.isEmergency,
+      priority,
+      triageCategory,
     };
   },
 });
