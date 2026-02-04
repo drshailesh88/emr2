@@ -10,11 +10,12 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { LogOut, Users, MessageSquare } from "lucide-react";
+import { LogOut, Users, MessageSquare, FileText, ClipboardList } from "lucide-react";
 import { PatientQueuePanel } from "@/components/emr/PatientQueuePanel";
 import { PrescriptionEditorPanel } from "@/components/emr/PrescriptionEditorPanel";
 import { AIAssistantPanel } from "@/components/emr/AIAssistantPanel";
 import { ApprovalQueuePanel } from "@/components/emr/ApprovalQueuePanel";
+import { DocumentsPanel } from "@/components/emr/DocumentsPanel";
 
 export default function DashboardPage() {
   const { signOut } = useAuthActions();
@@ -27,6 +28,9 @@ export default function DashboardPage() {
 
   // Left panel tab state
   const [leftPanelTab, setLeftPanelTab] = useState<"patients" | "approvals">("patients");
+
+  // Middle panel tab state
+  const [middlePanelTab, setMiddlePanelTab] = useState<"prescription" | "documents">("prescription");
 
   // Get pending approvals count
   const pendingApprovals = useQuery(
@@ -124,11 +128,37 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Middle Panel - Prescription Editor */}
-        <PrescriptionEditorPanel
-          doctor={doctor ?? null}
-          selectedPatient={selectedPatient ?? null}
-        />
+        {/* Middle Panel - Prescription Editor / Documents */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Middle Panel Tabs */}
+          <div className="p-2 border-b bg-card">
+            <Tabs value={middlePanelTab} onValueChange={(v) => setMiddlePanelTab(v as "prescription" | "documents")}>
+              <TabsList className="grid grid-cols-2 w-64">
+                <TabsTrigger value="prescription" className="text-xs" data-testid="prescription-tab">
+                  <ClipboardList className="h-3 w-3 mr-1" />
+                  Prescription
+                </TabsTrigger>
+                <TabsTrigger value="documents" className="text-xs" data-testid="documents-tab">
+                  <FileText className="h-3 w-3 mr-1" />
+                  Documents
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+
+          {/* Middle Panel Content */}
+          {middlePanelTab === "prescription" ? (
+            <PrescriptionEditorPanel
+              doctor={doctor ?? null}
+              selectedPatient={selectedPatient ?? null}
+            />
+          ) : (
+            <DocumentsPanel
+              patientId={selectedPatientId}
+              doctorId={doctor?._id ?? null}
+            />
+          )}
+        </div>
 
         {/* Right Panel - AI Assistant */}
         <AIAssistantPanel

@@ -101,6 +101,30 @@ Week 6-8: Implement Documents + Records functionality (file uploads, OCR, docume
   - Echo reports (EF%, chambers)
 - [x] Add HTTP endpoints: POST /process-documents, GET /processing-stats
 - [x] Category classification: lab_report, prescription, discharge_summary, ecg, echo_report, angiography, imaging, medical_certificate, insurance_form, other
+- [x] Commit: 18eb4d1
+
+### Task 4: Create Convex file storage integration ✅
+- [x] Already implemented in Tasks 1-3:
+  - generateUploadUrl mutation in convex/documents.ts
+  - File upload from WhatsApp adapter
+  - Storage URLs for file access
+  - File size tracking
+  - Delete document with storage cleanup
+
+### Task 5: Build document viewer in EMR dashboard ✅
+- [x] Create DocumentsPanel component with:
+  - Document list with thumbnails
+  - Category badges (lab_report, prescription, ecg, etc.)
+  - Processing status indicators (pending, processing, completed, failed)
+  - Retry OCR button for failed documents
+- [x] Add preview modal with:
+  - Image preview (for images)
+  - PDF embed (for PDFs)
+  - Extracted OCR text sidebar
+  - Summary display
+  - Category and metadata
+- [x] Add Documents tab to dashboard middle panel
+- [x] Tab switch between Prescription and Documents views
 
 ## Completed
 
