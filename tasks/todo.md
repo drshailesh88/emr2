@@ -152,6 +152,24 @@ Week 6-8: Implement Documents + Records functionality (file uploads, OCR, docume
   - Recommendations
   - Timeline of recent events
 - [x] Install shadcn/ui Collapsible component
+- [x] Commit: b0a3fa3
+
+### Task 8: Write tests for document flow ✅
+- [x] Create tests/documents.spec.ts - Playwright E2E tests:
+  - Dashboard tab structure verification
+  - Document panel states (empty, with docs)
+  - Search panel and input
+  - Preview modal structure
+  - AI Summary feature
+  - 3 passing, 12 skipped (require auth)
+- [x] Create tests/documentProcessing.test.ts - Vitest unit tests:
+  - Category configuration validation
+  - MIME type mapping
+  - Caption-based category detection
+  - File type detection
+  - OCR processing status
+  - Search functionality
+  - 26 tests passing
 
 ## Completed
 
