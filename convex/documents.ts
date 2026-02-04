@@ -186,6 +186,86 @@ export const searchByCategory = query({
   },
 });
 
+// Search documents by text content
+export const searchDocuments = query({
+  args: {
+    doctorId: v.id("doctors"),
+    query: v.string(),
+    category: v.optional(v.string()),
+    startDate: v.optional(v.number()),
+    endDate: v.optional(v.number()),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit || 50;
+    const queryLower = args.query.toLowerCase();
+
+    // Get all documents for this doctor
+    const allDocuments = await ctx.db
+      .query("documents")
+      .withIndex("by_doctor", (q) => q.eq("doctorId", args.doctorId))
+      .collect();
+
+    // Get all patients for patient name search
+    const patients = await ctx.db
+      .query("patients")
+      .withIndex("by_doctor", (q) => q.eq("doctorId", args.doctorId))
+      .collect();
+
+    const patientMap = new Map(patients.map((p) => [p._id, p]));
+
+    // Filter documents based on search criteria
+    const filteredDocuments = allDocuments.filter((doc) => {
+      // Category filter
+      if (args.category && doc.category !== args.category) {
+        return false;
+      }
+
+      // Date range filter
+      if (args.startDate && doc.uploadedAt < args.startDate) {
+        return false;
+      }
+      if (args.endDate && doc.uploadedAt > args.endDate) {
+        return false;
+      }
+
+      // Text search (in filename, extracted text, summary, or patient name)
+      const patient = patientMap.get(doc.patientId);
+      const searchableText = [
+        doc.fileName,
+        doc.extractedText,
+        doc.summary,
+        patient?.name,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      return searchableText.includes(queryLower);
+    });
+
+    // Sort by date (newest first) and limit
+    const sortedDocuments = filteredDocuments
+      .sort((a, b) => b.uploadedAt - a.uploadedAt)
+      .slice(0, limit);
+
+    // Get file URLs and patient info
+    const documentsWithDetails = await Promise.all(
+      sortedDocuments.map(async (doc) => {
+        const url = await ctx.storage.getUrl(doc.fileId);
+        const patient = patientMap.get(doc.patientId);
+        return {
+          ...doc,
+          url,
+          patientName: patient?.name || "Unknown",
+        };
+      })
+    );
+
+    return documentsWithDetails;
+  },
+});
+
 // Get recent documents for a doctor (last 50)
 export const getRecentDocuments = query({
   args: {

@@ -10,12 +10,13 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { LogOut, Users, MessageSquare, FileText, ClipboardList } from "lucide-react";
+import { LogOut, Users, MessageSquare, FileText, ClipboardList, Search } from "lucide-react";
 import { PatientQueuePanel } from "@/components/emr/PatientQueuePanel";
 import { PrescriptionEditorPanel } from "@/components/emr/PrescriptionEditorPanel";
 import { AIAssistantPanel } from "@/components/emr/AIAssistantPanel";
 import { ApprovalQueuePanel } from "@/components/emr/ApprovalQueuePanel";
 import { DocumentsPanel } from "@/components/emr/DocumentsPanel";
+import { DocumentSearchPanel } from "@/components/emr/DocumentSearchPanel";
 
 export default function DashboardPage() {
   const { signOut } = useAuthActions();
@@ -30,7 +31,7 @@ export default function DashboardPage() {
   const [leftPanelTab, setLeftPanelTab] = useState<"patients" | "approvals">("patients");
 
   // Middle panel tab state
-  const [middlePanelTab, setMiddlePanelTab] = useState<"prescription" | "documents">("prescription");
+  const [middlePanelTab, setMiddlePanelTab] = useState<"prescription" | "documents" | "search">("prescription");
 
   // Get pending approvals count
   const pendingApprovals = useQuery(
@@ -132,8 +133,8 @@ export default function DashboardPage() {
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Middle Panel Tabs */}
           <div className="p-2 border-b bg-card">
-            <Tabs value={middlePanelTab} onValueChange={(v) => setMiddlePanelTab(v as "prescription" | "documents")}>
-              <TabsList className="grid grid-cols-2 w-64">
+            <Tabs value={middlePanelTab} onValueChange={(v) => setMiddlePanelTab(v as "prescription" | "documents" | "search")}>
+              <TabsList className="grid grid-cols-3 w-80">
                 <TabsTrigger value="prescription" className="text-xs" data-testid="prescription-tab">
                   <ClipboardList className="h-3 w-3 mr-1" />
                   Prescription
@@ -141,6 +142,10 @@ export default function DashboardPage() {
                 <TabsTrigger value="documents" className="text-xs" data-testid="documents-tab">
                   <FileText className="h-3 w-3 mr-1" />
                   Documents
+                </TabsTrigger>
+                <TabsTrigger value="search" className="text-xs" data-testid="search-tab">
+                  <Search className="h-3 w-3 mr-1" />
+                  Search
                 </TabsTrigger>
               </TabsList>
             </Tabs>
@@ -152,9 +157,13 @@ export default function DashboardPage() {
               doctor={doctor ?? null}
               selectedPatient={selectedPatient ?? null}
             />
-          ) : (
+          ) : middlePanelTab === "documents" ? (
             <DocumentsPanel
               patientId={selectedPatientId}
+              doctorId={doctor?._id ?? null}
+            />
+          ) : (
+            <DocumentSearchPanel
               doctorId={doctor?._id ?? null}
             />
           )}

@@ -125,6 +125,19 @@ Week 6-8: Implement Documents + Records functionality (file uploads, OCR, docume
   - Category and metadata
 - [x] Add Documents tab to dashboard middle panel
 - [x] Tab switch between Prescription and Documents views
+- [x] Commit: 24e60bc
+
+### Task 6: Implement patient record search ✅
+- [x] Add searchDocuments query in convex/documents.ts
+- [x] Search by filename, extracted text, summary, patient name
+- [x] Filter by category and date range
+- [x] Create DocumentSearchPanel component with:
+  - Search input with query highlighting
+  - Category filter dropdown
+  - Results display with patient name
+  - Recent documents when no search query
+- [x] Add Search tab to dashboard middle panel
+- [x] Install shadcn/ui Select component
 
 ## Completed
 
