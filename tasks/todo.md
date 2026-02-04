@@ -23,6 +23,16 @@ Initialize project infrastructure and complete Week 1-2 foundations.
 
 ## In Progress
 
+### Task #8: Build 3-panel EMR Layout (Parallel Terminal A) ✅
+- [x] Create responsive 3-panel flexbox layout on /dashboard
+- [x] Left panel: Patient Queue (256px fixed width, scrollable)
+- [x] Middle panel: Prescription Editor (flexible width, main content)
+- [x] Right panel: AI Assistant (320px fixed width, chat interface)
+- [x] Header bar with doctor name, clinic, and logout
+- [x] Placeholder content in each panel
+- [x] Write Playwright test for layout
+- [x] Test passes → commit
+
 ### Task #7: Deploy to Railway ✅
 - [x] Create railway.json configuration
 - [x] Configure build and start commands
