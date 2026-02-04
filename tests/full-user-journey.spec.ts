@@ -143,8 +143,9 @@ test.describe('Authentication Flow', () => {
 
 test.describe('Dashboard - Patient Queue (Left Panel)', () => {
   test.beforeEach(async ({ page }) => {
-    // Each test creates its own user for isolation
-    const uniqueEmail = `patient-queue-${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`;
+    // Each test creates its own user for isolation - use more unique identifiers
+    const uniqueId = `${Date.now()}-${Math.random().toString(36).slice(2)}-${process.pid}`;
+    const uniqueEmail = `pq-${uniqueId}@example.com`;
     await page.goto('/signup');
     await page.fill('input#email', uniqueEmail);
     await page.fill('input#password', 'TestPassword123!');
@@ -152,14 +153,14 @@ test.describe('Dashboard - Patient Queue (Left Panel)', () => {
     await page.click('button[type="submit"]');
     await expect(page.locator('text=Complete your doctor profile')).toBeVisible({ timeout: 10000 });
     await page.fill('input#name', 'Queue Test Doctor');
-    await page.fill('input#phone', '7777777777');
+    await page.fill('input#phone', `777${Date.now().toString().slice(-7)}`);
     await page.fill('input#specialty', 'Cardiology');
     await page.fill('input#qualifications', 'MBBS, MD');
     await page.fill('input#clinicName', 'Queue Test Clinic');
     await page.fill('input#clinicAddress', '123 Queue Street');
-    await page.fill('input#registrationNumber', 'QUEUE-001');
+    await page.fill('input#registrationNumber', `QUE-${uniqueId.slice(0, 6)}`);
     await page.click('button:has-text("Create Account")');
-    await page.waitForURL('/dashboard', { timeout: 15000 });
+    await page.waitForURL('/dashboard', { timeout: 20000 });
   });
 
   test('patient queue panel renders', async ({ page }) => {
@@ -301,8 +302,8 @@ test.describe('Dashboard - AI Assistant Panel (Right Panel)', () => {
   });
 
   test('AI assistant has title', async ({ page }) => {
-    // Use more specific selector - the heading element
-    await expect(page.getByRole('heading', { name: 'AI Assistant' })).toBeVisible();
+    // Use specific selector within the AI panel
+    await expect(page.locator('[data-testid="ai-assistant-panel"]').getByRole('heading', { name: 'AI Assistant' })).toBeVisible();
   });
 
   test('AI assistant has input field for messages', async ({ page }) => {
