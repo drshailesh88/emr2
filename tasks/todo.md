@@ -23,13 +23,13 @@ Initialize project infrastructure and complete Week 1-2 foundations.
 
 ## In Progress
 
-### Task #4: Install and configure shadcn/ui + Tailwind ✅
-- [x] Install Tailwind CSS v4 and dependencies
-- [x] Configure postcss.config.mjs for Tailwind v4
-- [x] Initialize shadcn/ui (v4 compatible)
-- [x] Install 12 essential components
-- [x] Create lib/utils.ts with cn() helper
-- [x] Verify components render correctly (HTTP 200)
+### Task #5: Set up Convex Auth for doctors ✅
+- [x] Install @convex-dev/auth and dependencies
+- [x] Configure auth in convex/auth.ts
+- [x] Set up password-based authentication
+- [x] Create ConvexAuthProvider wrapper
+- [x] Add auth tables to schema
+- [x] Create users.ts with currentDoctor query
 
 ## Completed
 
@@ -42,10 +42,14 @@ Commit: d7c0d6a - 9 tables, 26 indexes deployed successfully
 ### Task #3: Initialize Next.js 14 ✅
 Commit: 3dce8b4 - Next.js 16.1.6 running at localhost:3000
 
+### Task #4: shadcn/ui + Tailwind v4 ✅
+Commit: 0d7f80d - 12 UI components installed, CSS variables configured
+
 ## Blockers
 <!-- Document any issues preventing progress -->
 
 ## Notes for Next Session
+
 <!-- Important context for continuation -->
 
 ---

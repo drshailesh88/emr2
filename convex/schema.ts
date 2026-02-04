@@ -1,9 +1,14 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { authTables } from "@convex-dev/auth/server";
 
 export default defineSchema({
+  // Auth tables from @convex-dev/auth
+  ...authTables,
+
   // Doctor profiles and settings
   doctors: defineTable({
+    userId: v.id("users"), // Link to auth users table
     name: v.string(),
     phone: v.string(),
     email: v.optional(v.string()),
@@ -17,6 +22,7 @@ export default defineSchema({
     emergencyTemplate: v.optional(v.string()),
     emergencyContact: v.optional(v.string()),
   })
+    .index("by_user", ["userId"])
     .index("by_phone", ["phone"])
     .index("by_email", ["email"]),
 
