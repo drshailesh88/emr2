@@ -1,10 +1,73 @@
 # Doctor Secretary AI - Current TODO
 
 ## Session Goal
-Week 9-11: COMPLETED - Prescriptions and Web Dashboard enhancements.
+Week 12-13: Implement Payments and Pilot Readiness. **COMPLETE**
 
-## Current Status
-All Week 9-11 tasks completed and pushed to GitHub.
+## Completed Tasks
+
+### Week 12: Payments ✅
+
+#### Task 1: Set up Razorpay integration ✅
+- [x] Create Razorpay account configuration (lib/razorpay.ts)
+- [x] Add Razorpay SDK to project (razorpay v2.9.6)
+- [x] Create payment service with order creation (createOrder, createPaymentLink)
+- [x] Handle payment verification webhooks (app/api/payments/webhook/route.ts)
+- Commit: d393c1c
+
+#### Task 2: Implement UPI payment link generation ✅
+- [x] Generate UPI payment links for appointments (app/api/payments/create-link/route.ts)
+- [x] Create payment request UI component (components/payments/PaymentRequestPanel.tsx)
+- [x] Send payment link via WhatsApp (integrated in PaymentRequestPanel)
+- [x] Track payment status (PaymentStatusBadge component)
+- Commit: 07af302
+
+#### Task 3: Build payment status tracking ✅
+- [x] Create payment status queries (convex/payments.ts - getByDoctor, getStats)
+- [x] Update appointment status on payment (markCompleted mutation)
+- [x] Handle payment failures and retries (markFailed, webhook handling)
+- [x] Payment history per patient (PaymentHistoryPanel.tsx with filtering, CSV export)
+- Commit: 07af302
+
+#### Task 4: Implement receipts ✅
+- [x] Generate payment receipt PDF (lib/receiptPdf.tsx with @react-pdf/renderer)
+- [x] Send receipt via WhatsApp (integrated via existing adapter)
+- [x] Receipt history and download (app/api/payments/receipt/route.ts)
+- Commit: 07af302
+
+### Week 13: Pilot Readiness ✅
+
+#### Task 5: Internal QA and safety checks ✅
+- [x] Review emergency detection coverage (lib/safety-checks.ts - test suite)
+- [x] Audit approval workflow completeness (configuration checks)
+- [x] Test all WhatsApp message flows (emergency detection tests)
+- [x] Verify data privacy controls (QADashboard health score)
+- Commit: 9243d73
+
+#### Task 6: Create doctor onboarding flow ✅
+- [x] Doctor signup with clinic details (OnboardingWizard 5-step flow)
+- [x] WhatsApp QR code connection UI (step in wizard)
+- [x] Initial patient import capability (handled via WhatsApp messages)
+- [x] Settings and preferences page (safety settings in wizard)
+- Commit: 9243d73
+
+#### Task 7: Build feedback collection ✅
+- [x] In-app feedback form (FeedbackWidget component)
+- [x] NPS Survey component (NPSSurvey)
+- [x] Feedback schema and Convex functions (convex/feedback.ts)
+- [x] Feedback statistics (getStats query)
+- Commit: 9243d73
+
+#### Task 8: Documentation and playbook ✅
+- [x] Deployment guide (docs/deployment-guide.md)
+- [x] Pilot playbook (docs/pilot-playbook.md)
+- [x] API documentation (docs/api-reference.md)
+- Commit: (this commit)
+
+---
+
+## Completed
+
+### Week 9-11: Prescriptions + Dashboard ✅
 
 ## Completed Tasks
 
