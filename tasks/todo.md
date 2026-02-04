@@ -50,6 +50,9 @@ Commit: 8c69264 - Password auth configured, ConvexAuthProvider ready
 ### Task #6: Login/Signup Pages ✅
 Commit: 1d03caf - 2-step signup, login, dashboard with auth check
 
+### Task #7: Railway Deployment ✅
+Commit: f6277ee - railway.json configured, build passes
+
 ## Blockers
 <!-- Document any issues preventing progress -->
 

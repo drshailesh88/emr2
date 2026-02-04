@@ -95,6 +95,7 @@ For each feature, follow this loop:
 
 6. IF TEST PASSES:
    └── Git commit with descriptive message
+   └── Git push to GitHub (origin main)
    └── Update Task status to completed
    └── Move to next task
 ```
@@ -132,6 +133,36 @@ TaskUpdate <id>   → Update status (pending → in_progress → completed)
 
 ---
 
+## GitHub Repository
+
+**Remote:** https://github.com/drshailesh88/emr2
+
+### Git + GitHub Workflow
+
+After every completed task:
+```bash
+git add .
+git commit -m "feat: <description of what was built>"
+git push origin main
+```
+
+**Commit message format:**
+- `feat:` - New feature
+- `fix:` - Bug fix
+- `refactor:` - Code restructuring
+- `test:` - Adding tests
+- `docs:` - Documentation
+- `chore:` - Setup, config, dependencies
+
+**Push frequency:**
+- Push after EVERY task completion
+- Push before ending a session
+- Push before switching to a different terminal
+
+**Never force push to main.** If there are conflicts, pull first and resolve.
+
+---
+
 ## Tech Stack Reference
 
 | Component | Technology | Notes |
@@ -146,6 +177,7 @@ TaskUpdate <id>   → Update status (pending → in_progress → completed)
 | WhatsApp (test) | OpenClaw + Baileys | Internal testing only |
 | Payments | Razorpay | UPI + cards |
 | PDF | @react-pdf/renderer | React components → PDF |
+| Version Control | Git + GitHub | Push after every task |
 
 ---
 
@@ -161,12 +193,13 @@ TaskUpdate <id>   → Update status (pending → in_progress → completed)
 
 When context is filling up or switching tasks:
 1. Commit all current work with clear message
-2. Update Task status (in_progress or completed)
-3. Update `tasks/todo.md` with:
+2. **Push to GitHub** (`git push origin main`)
+3. Update Task status (in_progress or completed)
+4. Update `tasks/todo.md` with:
    - What was completed
    - What's next
    - Any blockers or notes
-4. If mid-feature: note exactly where to continue
+5. If mid-feature: note exactly where to continue
 
 ---
 
