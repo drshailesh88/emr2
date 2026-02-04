@@ -23,23 +23,22 @@ Initialize project infrastructure and complete Week 1-2 foundations.
 
 ## In Progress
 
-### Task #2: Create Complete Database Schema ✅
-- [x] Define doctors table (profile, settings, clinic info)
-- [x] Define patients table (medical info, linked to doctor)
-- [x] Define conversations table (message threads)
-- [x] Define messages table (with triage metadata)
-- [x] Define appointments table (scheduling, status)
-- [x] Define prescriptions table (medications array)
-- [x] Define documents table (file uploads, OCR data)
-- [x] Define payments table (Razorpay tracking)
-- [x] Define auditLog table (compliance logging)
-- [x] Add indexes for common queries (26 indexes)
-- [x] Verify schema deploys successfully
+### Task #3: Initialize Next.js 14 with App Router ✅
+- [x] Install Next.js 14+ dependencies (16.1.6 installed)
+- [x] Create app/ directory structure
+- [x] Configure next.config.ts
+- [x] Create root layout.tsx with metadata
+- [x] Create basic page.tsx
+- [x] Add TypeScript strict mode
+- [x] Verify dev server runs at localhost:3000 (HTTP 200)
 
 ## Completed
 
 ### Task #1: Initialize Convex Project ✅
 Commit: c190f16 - Convex backend running locally at http://127.0.0.1:3210
+
+### Task #2: Create Complete Database Schema ✅
+Commit: d7c0d6a - 9 tables, 26 indexes deployed successfully
 
 ## Blockers
 <!-- Document any issues preventing progress -->

@@ -4,14 +4,31 @@
   "description": "AI-powered medical secretary for solo doctors in India",
   "private": true,
   "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
     "convex": "convex dev",
     "convex:deploy": "convex deploy",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["medical", "emr", "ai", "whatsapp", "convex"],
+  "keywords": [
+    "medical",
+    "emr",
+    "ai",
+    "whatsapp",
+    "convex"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "convex": "^1.31.7"
+    "@types/node": "^25.2.0",
+    "@types/react": "^19.2.10",
+    "@types/react-dom": "^19.2.3",
+    "convex": "^1.31.7",
+    "next": "^16.1.6",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "typescript": "^5.9.3"
   }
 }
