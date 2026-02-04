@@ -6,17 +6,28 @@ test.describe('Document Management', () => {
       // Navigate to dashboard (will redirect to login if not authenticated)
       await page.goto('/dashboard');
 
-      // Check if redirected to login (unauthenticated)
-      const isLogin = await page.url().includes('/login');
+      // Wait for either: redirect to login OR tabs to appear
+      // This handles the loading state properly
+      try {
+        // Wait up to 5 seconds for tabs to appear (authenticated case)
+        await page.waitForSelector('[data-testid="prescription-tab"]', { timeout: 5000 });
 
-      if (isLogin) {
-        // Just verify the login page loads (auth required for full test)
-        await expect(page).toHaveURL('/login');
-      } else {
-        // If authenticated, verify the tabs exist
+        // If we get here, user is authenticated - verify all tabs
         await expect(page.locator('[data-testid="prescription-tab"]')).toBeVisible();
         await expect(page.locator('[data-testid="documents-tab"]')).toBeVisible();
         await expect(page.locator('[data-testid="search-tab"]')).toBeVisible();
+      } catch {
+        // Tabs didn't appear - either redirected to login or still loading
+        // Wait for URL to stabilize
+        await page.waitForURL(/\/(login|dashboard)/, { timeout: 5000 });
+
+        if (page.url().includes('/login')) {
+          // Unauthenticated - just verify login page loaded
+          await expect(page).toHaveURL('/login');
+        } else {
+          // Still on dashboard but no tabs - this is an error
+          throw new Error('Dashboard loaded but tabs not visible');
+        }
       }
     });
   });
