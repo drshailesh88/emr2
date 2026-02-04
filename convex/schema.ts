@@ -168,4 +168,29 @@ export default defineSchema({
   })
     .index("by_doctor", ["doctorId"])
     .index("by_doctor_time", ["doctorId", "timestamp"]),
+
+  // WhatsApp session credentials (Baileys auth state)
+  whatsappSessions: defineTable({
+    sessionId: v.string(), // Unique identifier for this session
+    credentialsJson: v.string(), // Serialized Baileys credentials
+    lastConnected: v.optional(v.number()),
+    status: v.string(), // "connected" | "disconnected" | "qr_pending"
+    qrCode: v.optional(v.string()), // Current QR code if waiting for scan
+  })
+    .index("by_session", ["sessionId"]),
+
+  // WhatsApp message queue for outbound messages
+  whatsappOutbox: defineTable({
+    recipientJid: v.string(), // WhatsApp JID (phone@s.whatsapp.net)
+    content: v.string(),
+    mediaUrl: v.optional(v.string()),
+    mediaType: v.optional(v.string()), // "image" | "document" | "audio"
+    status: v.string(), // "pending" | "sent" | "failed"
+    messageId: v.optional(v.string()), // WhatsApp message ID after sending
+    error: v.optional(v.string()),
+    createdAt: v.number(),
+    sentAt: v.optional(v.number()),
+  })
+    .index("by_status", ["status"])
+    .index("by_recipient", ["recipientJid"]),
 });
