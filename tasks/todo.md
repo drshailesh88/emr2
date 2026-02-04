@@ -23,6 +23,15 @@ Initialize project infrastructure and complete Week 1-2 foundations.
 
 ## In Progress
 
+### Task #11: Build AI Assistant Panel (Parallel Terminal A) ✅
+- [x] Extract AIAssistantPanel to separate component
+- [x] Chat history display with message bubbles (secretary/doctor roles)
+- [x] Input field for doctor commands (enabled when patient selected)
+- [x] Send WhatsApp and Send Email buttons
+- [x] Display patient context banner with allergy warning
+- [x] Placeholder responses with keyword-based demo
+- [x] Test passes → commit
+
 ### Task #10: Build Prescription Editor Panel (Parallel Terminal A) ✅
 - [x] Extract PrescriptionEditorPanel to separate component
 - [x] Add form fields: chief complaints, diagnosis, medications
