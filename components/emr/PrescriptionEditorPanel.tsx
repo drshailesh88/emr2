@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Trash2, Loader2, Check, AlertTriangle, FileText, Download } from "lucide-react";
+import { Plus, Trash2, Loader2, Check, AlertTriangle, FileText, Download, Send } from "lucide-react";
 import {
   searchMedications,
   getMedication,
@@ -70,11 +70,15 @@ export function PrescriptionEditorPanel({
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [isSendingWhatsApp, setIsSendingWhatsApp] = useState(false);
+  const [whatsAppSent, setWhatsAppSent] = useState(false);
+  const [lastPrescriptionId, setLastPrescriptionId] = useState<Id<"prescriptions"> | null>(null);
 
   // Convex mutations
   const createPrescription = useMutation(api.prescriptions.create);
   const generateUploadUrl = useMutation(api.prescriptionPdf.generatePdfUploadUrl);
   const storePdfFileId = useMutation(api.prescriptionPdf.storePdfFileId);
+  const markAsSent = useMutation(api.prescriptionPdf.markAsSent);
 
   // Reset form when patient changes
   useEffect(() => {
@@ -87,6 +91,8 @@ export function PrescriptionEditorPanel({
     setSaveSuccess(false);
     setSelectedTemplate("");
     setDrugWarnings([]);
+    setWhatsAppSent(false);
+    setLastPrescriptionId(null);
   }, [selectedPatient?._id]);
 
   // Check drug interactions when medications change
@@ -272,6 +278,7 @@ export function PrescriptionEditorPanel({
             prescriptionId,
             fileId: storageId,
           });
+          setLastPrescriptionId(prescriptionId);
         }
       }
 
@@ -288,6 +295,137 @@ export function PrescriptionEditorPanel({
       console.error("Failed to generate PDF:", error);
     } finally {
       setIsGeneratingPdf(false);
+    }
+  };
+
+  // Send prescription via WhatsApp
+  const handleSendWhatsApp = async () => {
+    if (!selectedPatient || !doctor || !selectedPatient.phone) {
+      alert("Patient phone number is required to send via WhatsApp");
+      return;
+    }
+
+    setIsSendingWhatsApp(true);
+    setWhatsAppSent(false);
+
+    try {
+      // First ensure we have a PDF saved
+      let prescriptionId = lastPrescriptionId;
+      const validMedications = medications.filter((m) => m.name.trim());
+
+      if (!prescriptionId && validMedications.length > 0) {
+        // Save prescription and generate PDF first
+        await handleGeneratePdf();
+        prescriptionId = lastPrescriptionId;
+      }
+
+      if (!prescriptionId) {
+        alert("Please add medications and generate PDF first");
+        return;
+      }
+
+      // Get the PDF URL from Convex
+      const pdfUrlResponse = await fetch(
+        `/api/prescription-pdf-url?prescriptionId=${prescriptionId}`
+      );
+
+      if (!pdfUrlResponse.ok) {
+        // Fallback: generate PDF on-the-fly and use data URL
+        const { renderPrescriptionPdfToBlob } = await import("@/lib/prescriptionPdf");
+
+        const pdfBlob = await renderPrescriptionPdfToBlob({
+          doctor: {
+            name: doctor.name,
+            qualifications: doctor.qualifications,
+            specialty: doctor.specialty,
+            clinicName: doctor.clinicName,
+            clinicAddress: doctor.clinicAddress,
+            registrationNumber: doctor.registrationNumber,
+            phone: doctor.phone,
+          },
+          patient: {
+            name: selectedPatient.name,
+            age: selectedPatient.age,
+            sex: selectedPatient.sex,
+            phone: selectedPatient.phone,
+          },
+          date: new Date().toLocaleDateString("en-IN"),
+          chiefComplaints: chiefComplaints || undefined,
+          diagnosis: diagnosis || undefined,
+          medications: validMedications,
+          investigations: investigations.length > 0 ? investigations : undefined,
+          specialInstructions: specialInstructions || undefined,
+          followUp: followUp || undefined,
+        });
+
+        // Upload PDF and get URL
+        const uploadUrl = await generateUploadUrl();
+        const uploadResponse = await fetch(uploadUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/pdf" },
+          body: pdfBlob,
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error("Failed to upload PDF");
+        }
+
+        const { storageId } = await uploadResponse.json();
+
+        // Save to prescription if we have an ID
+        if (prescriptionId) {
+          await storePdfFileId({
+            prescriptionId,
+            fileId: storageId,
+          });
+        }
+      }
+
+      // Get the PDF URL
+      const pdfUrl = prescriptionId
+        ? `${window.location.origin}/api/prescription-pdf-url?prescriptionId=${prescriptionId}`
+        : null;
+
+      if (!pdfUrl) {
+        throw new Error("Could not get PDF URL");
+      }
+
+      // Send via WhatsApp adapter
+      const whatsappAdapterUrl = process.env.NEXT_PUBLIC_WHATSAPP_ADAPTER_URL || "http://localhost:3001";
+      const response = await fetch(`${whatsappAdapterUrl}/send-prescription`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone: selectedPatient.phone,
+          pdfUrl,
+          patientName: selectedPatient.name,
+          doctorName: doctor.name,
+        }),
+      });
+
+      if (response.ok) {
+        // Mark as sent in database
+        if (prescriptionId) {
+          await markAsSent({
+            prescriptionId,
+            channel: "whatsapp",
+          });
+        }
+        setWhatsAppSent(true);
+        setTimeout(() => setWhatsAppSent(false), 5000);
+      } else {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to send via WhatsApp");
+      }
+    } catch (error) {
+      console.error("Failed to send via WhatsApp:", error);
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Failed to send via WhatsApp. Please check if WhatsApp is connected."
+      );
+    } finally {
+      setIsSendingWhatsApp(false);
     }
   };
 
@@ -660,8 +798,24 @@ export function PrescriptionEditorPanel({
               )}
               PDF
             </Button>
-            <Button size="sm" disabled={!selectedPatient} data-testid="send-prescription-btn">
-              Send
+            {whatsAppSent && (
+              <span className="text-sm text-green-600 flex items-center gap-1">
+                <Check className="h-4 w-4" />
+                Sent
+              </span>
+            )}
+            <Button
+              size="sm"
+              disabled={!selectedPatient || !selectedPatient.phone || isSendingWhatsApp}
+              onClick={handleSendWhatsApp}
+              data-testid="send-prescription-btn"
+            >
+              {isSendingWhatsApp ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-1" />
+              ) : (
+                <Send className="h-4 w-4 mr-1" />
+              )}
+              Send via WhatsApp
             </Button>
           </div>
         </div>

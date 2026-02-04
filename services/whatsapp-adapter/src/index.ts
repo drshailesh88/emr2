@@ -19,6 +19,7 @@ import {
   disconnect,
   getConnectionStatus,
   sendTextMessage,
+  sendMediaMessage,
   setMessageHandler,
   downloadMedia,
   getMediaDetails,
@@ -122,6 +123,61 @@ app.post("/send", async (req, res) => {
   } catch (error) {
     logger.error({ error }, "Failed to send message");
     res.status(500).json({ error: "Failed to send message" });
+  }
+});
+
+// Send a document (PDF, image, etc.) via WhatsApp
+app.post("/send-document", async (req, res) => {
+  const { phone, documentUrl, caption, fileName } = req.body;
+
+  if (!phone || !documentUrl) {
+    res.status(400).json({ error: "phone and documentUrl are required" });
+    return;
+  }
+
+  // Format phone number to JID
+  const jid = phone.includes("@") ? phone : `${phone}@s.whatsapp.net`;
+
+  try {
+    const result = await sendMediaMessage(jid, documentUrl, "document", caption);
+    if (result) {
+      logger.info({ phone, fileName, messageId: result.messageId }, "Document sent via WhatsApp");
+      res.json({ success: true, messageId: result.messageId });
+    } else {
+      res.status(503).json({ error: "Not connected to WhatsApp" });
+    }
+  } catch (error) {
+    logger.error({ error, phone }, "Failed to send document");
+    res.status(500).json({ error: "Failed to send document" });
+  }
+});
+
+// Send prescription PDF to patient
+app.post("/send-prescription", async (req, res) => {
+  const { phone, pdfUrl, patientName, doctorName } = req.body;
+
+  if (!phone || !pdfUrl) {
+    res.status(400).json({ error: "phone and pdfUrl are required" });
+    return;
+  }
+
+  // Format phone number to JID
+  const jid = phone.includes("@") ? phone : `${phone}@s.whatsapp.net`;
+
+  // Create caption
+  const caption = `Prescription from Dr. ${doctorName || "Your Doctor"}\n\nDear ${patientName || "Patient"},\n\nPlease find attached your prescription. Follow the medication instructions carefully.\n\nFor any questions, please contact the clinic.`;
+
+  try {
+    const result = await sendMediaMessage(jid, pdfUrl, "document", caption);
+    if (result) {
+      logger.info({ phone, patientName, messageId: result.messageId }, "Prescription sent via WhatsApp");
+      res.json({ success: true, messageId: result.messageId });
+    } else {
+      res.status(503).json({ error: "Not connected to WhatsApp" });
+    }
+  } catch (error) {
+    logger.error({ error, phone }, "Failed to send prescription");
+    res.status(500).json({ error: "Failed to send prescription" });
   }
 });
 
