@@ -23,14 +23,13 @@ Initialize project infrastructure and complete Week 1-2 foundations.
 
 ## In Progress
 
-### Task #3: Initialize Next.js 14 with App Router ✅
-- [x] Install Next.js 14+ dependencies (16.1.6 installed)
-- [x] Create app/ directory structure
-- [x] Configure next.config.ts
-- [x] Create root layout.tsx with metadata
-- [x] Create basic page.tsx
-- [x] Add TypeScript strict mode
-- [x] Verify dev server runs at localhost:3000 (HTTP 200)
+### Task #4: Install and configure shadcn/ui + Tailwind ✅
+- [x] Install Tailwind CSS v4 and dependencies
+- [x] Configure postcss.config.mjs for Tailwind v4
+- [x] Initialize shadcn/ui (v4 compatible)
+- [x] Install 12 essential components
+- [x] Create lib/utils.ts with cn() helper
+- [x] Verify components render correctly (HTTP 200)
 
 ## Completed
 
@@ -39,6 +38,9 @@ Commit: c190f16 - Convex backend running locally at http://127.0.0.1:3210
 
 ### Task #2: Create Complete Database Schema ✅
 Commit: d7c0d6a - 9 tables, 26 indexes deployed successfully
+
+### Task #3: Initialize Next.js 14 ✅
+Commit: 3dce8b4 - Next.js 16.1.6 running at localhost:3000
 
 ## Blockers
 <!-- Document any issues preventing progress -->
