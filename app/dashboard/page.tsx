@@ -6,12 +6,15 @@ import { useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { LogOut } from "lucide-react";
+import { LogOut, Users, MessageSquare } from "lucide-react";
 import { PatientQueuePanel } from "@/components/emr/PatientQueuePanel";
 import { PrescriptionEditorPanel } from "@/components/emr/PrescriptionEditorPanel";
 import { AIAssistantPanel } from "@/components/emr/AIAssistantPanel";
+import { ApprovalQueuePanel } from "@/components/emr/ApprovalQueuePanel";
 
 export default function DashboardPage() {
   const { signOut } = useAuthActions();
@@ -21,6 +24,16 @@ export default function DashboardPage() {
 
   // Selected patient state
   const [selectedPatientId, setSelectedPatientId] = useState<Id<"patients"> | null>(null);
+
+  // Left panel tab state
+  const [leftPanelTab, setLeftPanelTab] = useState<"patients" | "approvals">("patients");
+
+  // Get pending approvals count
+  const pendingApprovals = useQuery(
+    api.messageIntake.getPendingApprovalMessages,
+    doctor ? { doctorId: doctor._id } : "skip"
+  );
+  const pendingCount = pendingApprovals?.length ?? 0;
 
   // Get selected patient details
   const selectedPatient = useQuery(
@@ -74,11 +87,42 @@ export default function DashboardPage() {
 
       {/* Main 3-Panel Layout */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left Panel - Patient Queue */}
-        <PatientQueuePanel
-          selectedPatientId={selectedPatientId}
-          onSelectPatient={setSelectedPatientId}
-        />
+        {/* Left Panel - Patient Queue / Approval Queue */}
+        <div className="w-80 border-r bg-card flex flex-col">
+          {/* Tab Switcher */}
+          <div className="p-2 border-b">
+            <Tabs value={leftPanelTab} onValueChange={(v) => setLeftPanelTab(v as "patients" | "approvals")}>
+              <TabsList className="w-full grid grid-cols-2">
+                <TabsTrigger value="patients" className="text-xs" data-testid="patients-tab">
+                  <Users className="h-3 w-3 mr-1" />
+                  Patients
+                </TabsTrigger>
+                <TabsTrigger value="approvals" className="text-xs relative" data-testid="approvals-tab">
+                  <MessageSquare className="h-3 w-3 mr-1" />
+                  Approvals
+                  {pendingCount > 0 && (
+                    <Badge
+                      variant="destructive"
+                      className="ml-1 h-4 w-4 p-0 text-[10px] flex items-center justify-center"
+                    >
+                      {pendingCount}
+                    </Badge>
+                  )}
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+
+          {/* Tab Content */}
+          {leftPanelTab === "patients" ? (
+            <PatientQueuePanel
+              selectedPatientId={selectedPatientId}
+              onSelectPatient={setSelectedPatientId}
+            />
+          ) : (
+            <ApprovalQueuePanel doctorId={doctor?._id ?? null} />
+          )}
+        </div>
 
         {/* Middle Panel - Prescription Editor */}
         <PrescriptionEditorPanel

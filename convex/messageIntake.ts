@@ -308,6 +308,86 @@ export const getPendingApprovalMessages = query({
   },
 });
 
+// Approve a message (allows response to be sent)
+export const approveMessage = mutation({
+  args: {
+    messageId: v.id("messages"),
+    draftResponse: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const message = await ctx.db.get(args.messageId);
+    if (!message) {
+      throw new Error("Message not found");
+    }
+
+    const conversation = await ctx.db.get(message.conversationId);
+    if (!conversation) {
+      throw new Error("Conversation not found");
+    }
+
+    // Update message as approved
+    await ctx.db.patch(args.messageId, {
+      approved: true,
+      approvedAt: Date.now(),
+      draftResponse: args.draftResponse,
+    });
+
+    // Log to audit
+    await ctx.db.insert("auditLog", {
+      doctorId: conversation.doctorId,
+      action: "message_approved",
+      details: JSON.stringify({
+        messageId: args.messageId,
+        hasDraftResponse: !!args.draftResponse,
+      }),
+      performedBy: "doctor",
+      timestamp: Date.now(),
+    });
+
+    return { success: true };
+  },
+});
+
+// Reject a message (discard without sending response)
+export const rejectMessage = mutation({
+  args: {
+    messageId: v.id("messages"),
+    reason: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const message = await ctx.db.get(args.messageId);
+    if (!message) {
+      throw new Error("Message not found");
+    }
+
+    const conversation = await ctx.db.get(message.conversationId);
+    if (!conversation) {
+      throw new Error("Conversation not found");
+    }
+
+    // Update message as rejected (approved: false)
+    await ctx.db.patch(args.messageId, {
+      approved: false,
+      approvedAt: Date.now(),
+      requiresApproval: false, // No longer needs approval
+    });
+
+    // Log to audit
+    await ctx.db.insert("auditLog", {
+      doctorId: conversation.doctorId,
+      action: "message_rejected",
+      details: JSON.stringify({
+        messageId: args.messageId,
+        reason: args.reason,
+      }),
+      performedBy: "doctor",
+      timestamp: Date.now(),
+    });
+
+    return { success: true };
+  },
+});
+
 // Get patient by WhatsApp JID
 export const getPatientByWhatsApp = query({
   args: { whatsappId: v.string() },

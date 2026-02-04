@@ -38,12 +38,11 @@ export function PatientQueuePanel({
   };
 
   return (
-    <aside
-      className="w-64 border-r bg-card flex flex-col"
+    <div
+      className="flex flex-col flex-1"
       data-testid="patient-queue-panel"
     >
       <div className="p-4 border-b">
-        <h2 className="font-semibold text-sm mb-3">Patient Queue</h2>
         <div className="relative">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -142,7 +141,7 @@ export function PatientQueuePanel({
           )}
         </div>
       </ScrollArea>
-    </aside>
+    </div>
   );
 }
 
