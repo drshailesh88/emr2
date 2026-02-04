@@ -23,13 +23,12 @@ Initialize project infrastructure and complete Week 1-2 foundations.
 
 ## In Progress
 
-### Task #6: Create doctor login/signup pages ✅
-- [x] Create /login page with email/password form
-- [x] Create /signup page with 2-step registration
-- [x] Form validation with error handling
-- [x] Loading states during auth operations
-- [x] Redirect to /dashboard after successful auth
-- [x] Create basic /dashboard page with auth check
+### Task #7: Deploy to Railway ✅
+- [x] Create railway.json configuration
+- [x] Configure build and start commands
+- [x] Set up .env.example for environment variables
+- [x] Test production build locally (passed)
+- [x] All routes compiled: /, /login, /signup, /dashboard
 
 ## Completed
 
@@ -47,6 +46,9 @@ Commit: 0d7f80d - 12 UI components installed, CSS variables configured
 
 ### Task #5: Convex Auth ✅
 Commit: 8c69264 - Password auth configured, ConvexAuthProvider ready
+
+### Task #6: Login/Signup Pages ✅
+Commit: 1d03caf - 2-step signup, login, dashboard with auth check
 
 ## Blockers
 <!-- Document any issues preventing progress -->
