@@ -23,16 +23,23 @@ Initialize project infrastructure and complete Week 1-2 foundations.
 
 ## In Progress
 
-### Task #1: Initialize Convex Project ✅
-- [x] Install convex npm package
-- [x] Run `npx convex dev` to initialize
-- [x] Verify convex/ directory created
-- [x] Verify _generated/ directory created
-- [x] Test connection to Convex backend ("Convex functions ready!")
-- [x] Add environment variables to .env.local
+### Task #2: Create Complete Database Schema ✅
+- [x] Define doctors table (profile, settings, clinic info)
+- [x] Define patients table (medical info, linked to doctor)
+- [x] Define conversations table (message threads)
+- [x] Define messages table (with triage metadata)
+- [x] Define appointments table (scheduling, status)
+- [x] Define prescriptions table (medications array)
+- [x] Define documents table (file uploads, OCR data)
+- [x] Define payments table (Razorpay tracking)
+- [x] Define auditLog table (compliance logging)
+- [x] Add indexes for common queries (26 indexes)
+- [x] Verify schema deploys successfully
 
 ## Completed
-<!-- Move completed items here with brief notes -->
+
+### Task #1: Initialize Convex Project ✅
+Commit: c190f16 - Convex backend running locally at http://127.0.0.1:3210
 
 ## Blockers
 <!-- Document any issues preventing progress -->
