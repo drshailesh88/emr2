@@ -396,6 +396,47 @@ export const getPendingApprovalMessages = query({
   },
 });
 
+// Get approval history (approved and rejected messages)
+export const getApprovalHistory = query({
+  args: {
+    doctorId: v.id("doctors"),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit || 50;
+
+    // Get messages that required approval and have been processed
+    const processedMessages = await ctx.db
+      .query("messages")
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("requiresApproval"), true),
+          q.neq(q.field("approved"), undefined)
+        )
+      )
+      .order("desc")
+      .take(limit * 2); // Take more to account for filtering
+
+    // Enrich with conversation and patient data, filtering by doctor
+    const enrichedMessages = await Promise.all(
+      processedMessages.map(async (msg) => {
+        const conversation = await ctx.db.get(msg.conversationId);
+        if (!conversation || conversation.doctorId !== args.doctorId) {
+          return null;
+        }
+
+        const patient = await ctx.db.get(conversation.patientId);
+        return {
+          ...msg,
+          patient: patient ? { name: patient.name, phone: patient.phone } : null,
+        };
+      })
+    );
+
+    return enrichedMessages.filter(Boolean).slice(0, limit);
+  },
+});
+
 // Approve a message (allows response to be sent)
 export const approveMessage = mutation({
   args: {
