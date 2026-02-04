@@ -137,6 +137,11 @@ export async function storeIncomingMessage(args: {
   doctorId?: string;
   isNew: boolean;
   isNewPatient?: boolean;
+  isEmergency?: boolean;
+  priority?: string;
+  triageCategory?: string;
+  intent?: string;
+  draftResponse?: string;
 }> {
   const result = await callConvex("messageIntake:storeIncomingMessage", args, "mutation");
   return result as {
@@ -146,5 +151,112 @@ export async function storeIncomingMessage(args: {
     doctorId?: string;
     isNew: boolean;
     isNewPatient?: boolean;
+    isEmergency?: boolean;
+    priority?: string;
+    triageCategory?: string;
+    intent?: string;
+    draftResponse?: string;
   };
+}
+
+// Doctor approval functions
+export async function isDoctorPhone(phone: string): Promise<boolean> {
+  const result = await callConvex("doctorApproval:isDoctorPhone", { phone }, "query");
+  return result as boolean;
+}
+
+export async function getDoctorByPhone(phone: string): Promise<{
+  _id: string;
+  name: string;
+  phone: string;
+} | null> {
+  const result = await callConvex("doctorApproval:getDoctorByPhone", { phone }, "query");
+  return result as { _id: string; name: string; phone: string } | null;
+}
+
+export async function processDoctorReply(doctorId: string, replyContent: string): Promise<{
+  action: string;
+  response: string;
+  messageId?: string;
+  patientId?: string;
+  responseToSend?: string;
+}> {
+  const result = await callConvex(
+    "doctorApproval:processDoctorReply",
+    { doctorId, replyContent },
+    "mutation"
+  );
+  return result as {
+    action: string;
+    response: string;
+    messageId?: string;
+    patientId?: string;
+    responseToSend?: string;
+  };
+}
+
+export async function createApprovalNotification(messageId: string): Promise<{
+  notificationId: string;
+  isNew: boolean;
+}> {
+  const result = await callConvex(
+    "doctorApproval:createApprovalNotification",
+    { messageId },
+    "mutation"
+  );
+  return result as { notificationId: string; isNew: boolean };
+}
+
+export async function markNotificationSent(
+  notificationId: string,
+  whatsappMessageId?: string
+): Promise<void> {
+  await callConvex(
+    "doctorApproval:markNotificationSent",
+    { notificationId, whatsappMessageId },
+    "mutation"
+  );
+}
+
+export async function getPendingNotifications(doctorId: string): Promise<
+  Array<{
+    _id: string;
+    messageId: string;
+    patientId: string;
+    status: string;
+    draftResponse?: string;
+    message: {
+      content: string;
+      priority?: string;
+      triageCategory?: string;
+      timestamp: number;
+    } | null;
+    patient: { name: string; phone: string } | null;
+  }>
+> {
+  const result = await callConvex(
+    "doctorApproval:getPendingNotifications",
+    { doctorId },
+    "query"
+  );
+  return result as Array<{
+    _id: string;
+    messageId: string;
+    patientId: string;
+    status: string;
+    draftResponse?: string;
+    message: {
+      content: string;
+      priority?: string;
+      triageCategory?: string;
+      timestamp: number;
+    } | null;
+    patient: { name: string; phone: string } | null;
+  }>;
+}
+
+// Get patient phone by patient ID
+export async function getPatientPhone(patientId: string): Promise<string | null> {
+  const result = await callConvex("patients:getPhone", { patientId }, "query");
+  return result as string | null;
 }

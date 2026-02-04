@@ -200,4 +200,24 @@ export default defineSchema({
   })
     .index("by_status", ["status"])
     .index("by_recipient", ["recipientJid"]),
+
+  // Doctor approval notifications (for quick-reply via WhatsApp)
+  doctorApprovalNotifications: defineTable({
+    doctorId: v.id("doctors"),
+    messageId: v.id("messages"), // The message requiring approval
+    patientId: v.id("patients"),
+    conversationId: v.id("conversations"),
+    // Notification state
+    status: v.string(), // "pending" | "notified" | "awaiting_edit" | "approved" | "rejected"
+    draftResponse: v.optional(v.string()),
+    // WhatsApp tracking
+    notificationWhatsappId: v.optional(v.string()), // WhatsApp ID of the notification sent
+    // Timing
+    createdAt: v.number(),
+    notifiedAt: v.optional(v.number()),
+    respondedAt: v.optional(v.number()),
+  })
+    .index("by_doctor", ["doctorId"])
+    .index("by_doctor_status", ["doctorId", "status"])
+    .index("by_message", ["messageId"]),
 });

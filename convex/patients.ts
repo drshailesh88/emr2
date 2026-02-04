@@ -107,6 +107,24 @@ export const create = mutation({
   },
 });
 
+// Get patient phone by ID (for WhatsApp adapter)
+export const getPhone = query({
+  args: { patientId: v.id("patients") },
+  handler: async (ctx, args) => {
+    const patient = await ctx.db.get(args.patientId);
+    return patient?.phone ?? null;
+  },
+});
+
+// Get patient WhatsApp JID by ID
+export const getWhatsAppId = query({
+  args: { patientId: v.id("patients") },
+  handler: async (ctx, args) => {
+    const patient = await ctx.db.get(args.patientId);
+    return patient?.whatsappId ?? null;
+  },
+});
+
 // Update a patient
 export const update = mutation({
   args: {
