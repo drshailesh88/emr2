@@ -138,6 +138,20 @@ Week 6-8: Implement Documents + Records functionality (file uploads, OCR, docume
   - Recent documents when no search query
 - [x] Add Search tab to dashboard middle panel
 - [x] Install shadcn/ui Select component
+- [x] Commit: 2ae8366
+
+### Task 7: Build multi-document summarization ✅
+- [x] Create convex/documentSummary.ts with:
+  - generatePatientSummary - comprehensive AI summary across all documents
+  - compareDocuments - compare two documents (lab reports)
+  - getPatientDocumentStats - statistics by category/status
+- [x] Add AI Summary button to DocumentsPanel
+- [x] Collapsible summary display with:
+  - Overview text
+  - Key findings list
+  - Recommendations
+  - Timeline of recent events
+- [x] Install shadcn/ui Collapsible component
 
 ## Completed
 

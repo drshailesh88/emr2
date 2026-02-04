@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
   FileText,
   Image,
   FileAudio,
@@ -26,6 +31,12 @@ import {
   XCircle,
   Loader2,
   Upload,
+  Sparkles,
+  ChevronDown,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  AlertCircle,
 } from "lucide-react";
 
 interface DocumentsPanelProps {
@@ -61,9 +72,27 @@ const categoryConfig: Record<string, { label: string; color: string }> = {
   other: { label: "Other", color: "bg-slate-500" },
 };
 
+// Summary result type
+interface PatientSummary {
+  summary: string;
+  timeline: Array<{
+    date: string;
+    category: string;
+    title: string;
+    keyFindings: string;
+  }>;
+  keyFindings: string[];
+  recommendations: string[];
+  documentCount: number;
+}
+
 export function DocumentsPanel({ patientId, doctorId }: DocumentsPanelProps) {
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [summaryOpen, setSummaryOpen] = useState(false);
+  const [patientSummary, setPatientSummary] = useState<PatientSummary | null>(null);
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
 
   // Fetch documents for the patient
   const documents = useQuery(
@@ -73,6 +102,27 @@ export function DocumentsPanel({ patientId, doctorId }: DocumentsPanelProps) {
 
   // Retry mutation
   const retryProcessing = useMutation(api.documentIngestion.retryProcessing);
+
+  // Generate summary action
+  const generateSummary = useAction(api.documentSummary.generatePatientSummary);
+
+  // Handle generating patient summary
+  const handleGenerateSummary = async () => {
+    if (!patientId) return;
+
+    setSummaryLoading(true);
+    setSummaryError(null);
+
+    try {
+      const result = await generateSummary({ patientId });
+      setPatientSummary(result);
+      setSummaryOpen(true);
+    } catch (error) {
+      setSummaryError(error instanceof Error ? error.message : "Failed to generate summary");
+    } finally {
+      setSummaryLoading(false);
+    }
+  };
 
   if (!patientId) {
     return (
@@ -141,11 +191,110 @@ export function DocumentsPanel({ patientId, doctorId }: DocumentsPanelProps) {
       {/* Header */}
       <div className="p-4 border-b flex items-center justify-between">
         <h2 className="font-semibold">Patient Documents</h2>
-        <Button size="sm" variant="outline">
-          <Upload className="h-4 w-4 mr-2" />
-          Upload
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleGenerateSummary}
+            disabled={summaryLoading || !documents || documents.length === 0}
+          >
+            {summaryLoading ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Sparkles className="h-4 w-4 mr-2" />
+            )}
+            AI Summary
+          </Button>
+          <Button size="sm" variant="outline">
+            <Upload className="h-4 w-4 mr-2" />
+            Upload
+          </Button>
+        </div>
       </div>
+
+      {/* Summary Section (collapsible) */}
+      {patientSummary && (
+        <Collapsible open={summaryOpen} onOpenChange={setSummaryOpen}>
+          <div className="border-b">
+            <CollapsibleTrigger asChild>
+              <div className="p-3 flex items-center justify-between cursor-pointer hover:bg-muted/50">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-purple-500" />
+                  <span className="font-medium text-sm">AI Summary</span>
+                  <Badge variant="secondary" className="text-xs">
+                    {patientSummary.documentCount} docs
+                  </Badge>
+                </div>
+                <ChevronDown className={`h-4 w-4 transition-transform ${summaryOpen ? "rotate-180" : ""}`} />
+              </div>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="p-4 space-y-4 bg-muted/30">
+                {/* Overview */}
+                <div>
+                  <h4 className="text-sm font-medium mb-1">Overview</h4>
+                  <p className="text-sm text-muted-foreground">{patientSummary.summary}</p>
+                </div>
+
+                {/* Key Findings */}
+                {patientSummary.keyFindings.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-medium mb-1">Key Findings</h4>
+                    <ul className="text-sm text-muted-foreground space-y-1">
+                      {patientSummary.keyFindings.slice(0, 5).map((finding, i) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <AlertCircle className="h-3 w-3 mt-0.5 text-blue-500 shrink-0" />
+                          {finding}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Recommendations */}
+                {patientSummary.recommendations.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-medium mb-1">Recommendations</h4>
+                    <ul className="text-sm text-muted-foreground space-y-1">
+                      {patientSummary.recommendations.slice(0, 3).map((rec, i) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <TrendingUp className="h-3 w-3 mt-0.5 text-green-500 shrink-0" />
+                          {rec}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Timeline (compact) */}
+                {patientSummary.timeline.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-medium mb-1">Recent History</h4>
+                    <div className="space-y-2">
+                      {patientSummary.timeline.slice(0, 4).map((event, i) => (
+                        <div key={i} className="flex items-start gap-2 text-xs">
+                          <span className="text-muted-foreground w-16 shrink-0">{event.date}</span>
+                          <Badge variant="outline" className="text-xs shrink-0">
+                            {event.category}
+                          </Badge>
+                          <span className="text-muted-foreground">{event.keyFindings}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CollapsibleContent>
+          </div>
+        </Collapsible>
+      )}
+
+      {/* Error message */}
+      {summaryError && (
+        <div className="p-3 bg-red-50 border-b text-red-600 text-sm">
+          {summaryError}
+        </div>
+      )}
 
       {/* Document List */}
       <ScrollArea className="flex-1 p-4">
