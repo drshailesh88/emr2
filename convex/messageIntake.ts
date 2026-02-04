@@ -2,6 +2,11 @@ import { v } from "convex/values";
 import { mutation, query, MutationCtx } from "./_generated/server";
 import { Id } from "./_generated/dataModel";
 import { detectEmergency, getEmergencyPriority } from "./emergencyDetection";
+import {
+  detectAppointmentIntent,
+  extractTimePreferences,
+  generateAppointmentDraftResponse,
+} from "./appointmentHandler";
 
 // Store an incoming WhatsApp message
 export const storeIncomingMessage = mutation({
@@ -55,10 +60,36 @@ export const storeIncomingMessage = mutation({
     const emergencyResult = detectEmergency(args.content);
     const priority = getEmergencyPriority(args.content);
 
-    // Determine triage category
+    // Determine triage category and intent
     let triageCategory: "emergency" | "clinical" | "admin" | undefined = undefined;
+    let intent: string | undefined = undefined;
+    let draftResponse: string | undefined = undefined;
+
     if (emergencyResult.isEmergency) {
       triageCategory = "emergency";
+      intent = `emergency:${emergencyResult.categories.join(",")}`;
+    } else {
+      // Check for appointment intent
+      const appointmentIntent = detectAppointmentIntent(args.content);
+      if (appointmentIntent.isAppointmentRelated && appointmentIntent.intent) {
+        triageCategory = "admin";
+        intent = `appointment:${appointmentIntent.intent}`;
+
+        // Get patient name for draft response
+        const patient = await ctx.db.get(patientId);
+        const patientName = patient?.name || "Patient";
+
+        // Extract time preferences
+        const timePrefs = extractTimePreferences(args.content);
+
+        // Generate draft response
+        draftResponse = generateAppointmentDraftResponse(
+          appointmentIntent.intent,
+          patientName,
+          timePrefs,
+          "english" // Default to English, could detect language
+        );
+      }
     }
 
     // Store the message with triage results
@@ -70,12 +101,11 @@ export const storeIncomingMessage = mutation({
       whatsappMessageId: args.whatsappMessageId,
       direction: "inbound",
       requiresApproval: true, // All inbound messages require approval by default
-      // Triage fields from emergency detection
+      // Triage fields from detection
       priority: priority || undefined,
-      intent: emergencyResult.isEmergency
-        ? `emergency:${emergencyResult.categories.join(",")}`
-        : undefined,
+      intent,
       triageCategory,
+      draftResponse,
     });
 
     // Log to audit
@@ -110,6 +140,61 @@ export const storeIncomingMessage = mutation({
       });
     }
 
+    // If appointment intent detected, create appointment request
+    let appointmentId: Id<"appointments"> | undefined = undefined;
+    if (intent?.startsWith("appointment:")) {
+      const appointmentIntent = detectAppointmentIntent(args.content);
+      const timePrefs = extractTimePreferences(args.content);
+
+      if (appointmentIntent.intent === "book") {
+        // Calculate preferred date
+        let preferredDateTime = Date.now();
+        if (timePrefs.preferredDay === "today") {
+          preferredDateTime = Date.now();
+        } else if (timePrefs.preferredDay === "tomorrow") {
+          preferredDateTime = Date.now() + 24 * 60 * 60 * 1000;
+        } else if (timePrefs.preferredDay === "dayAfter") {
+          preferredDateTime = Date.now() + 2 * 24 * 60 * 60 * 1000;
+        }
+
+        // Adjust for time preference
+        const date = new Date(preferredDateTime);
+        if (timePrefs.preferredTime === "morning") {
+          date.setHours(10, 0, 0, 0);
+        } else if (timePrefs.preferredTime === "afternoon") {
+          date.setHours(14, 0, 0, 0);
+        } else if (timePrefs.preferredTime === "evening") {
+          date.setHours(18, 0, 0, 0);
+        } else {
+          date.setHours(10, 0, 0, 0); // Default to 10 AM
+        }
+
+        // Create appointment with "requested" status
+        appointmentId = await ctx.db.insert("appointments", {
+          doctorId,
+          patientId,
+          dateTime: date.getTime(),
+          status: "requested",
+          reason: "Appointment request from WhatsApp",
+        });
+
+        // Log appointment creation
+        await ctx.db.insert("auditLog", {
+          doctorId,
+          action: "appointment_request_created",
+          details: JSON.stringify({
+            messageId,
+            appointmentId,
+            intent: appointmentIntent.intent,
+            preferredDay: timePrefs.preferredDay,
+            preferredTime: timePrefs.preferredTime,
+          }),
+          performedBy: "system",
+          timestamp: Date.now(),
+        });
+      }
+    }
+
     return {
       messageId,
       patientId,
@@ -117,10 +202,13 @@ export const storeIncomingMessage = mutation({
       doctorId,
       isNew: true,
       isNewPatient,
-      // Emergency detection results
+      // Triage results
       isEmergency: emergencyResult.isEmergency,
       priority,
       triageCategory,
+      intent,
+      draftResponse,
+      appointmentId,
     };
   },
 });
