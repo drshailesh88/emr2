@@ -187,6 +187,23 @@ export default defineSchema({
     .index("by_doctor", ["doctorId"])
     .index("by_doctor_time", ["doctorId", "timestamp"]),
 
+  // User feedback for pilot
+  feedback: defineTable({
+    doctorId: v.id("doctors"),
+    category: v.string(), // "bug" | "feature" | "usability" | "nps" | "other"
+    rating: v.optional(v.number()), // 1-5 for general, 0-10 for NPS
+    message: v.string(),
+    page: v.optional(v.string()), // Which page the feedback is from
+    metadata: v.optional(v.string()), // JSON string of additional context
+    status: v.string(), // "new" | "reviewed" | "in_progress" | "resolved" | "wont_fix"
+    adminNotes: v.optional(v.string()),
+    createdAt: v.number(),
+    reviewedAt: v.optional(v.number()),
+  })
+    .index("by_doctor", ["doctorId"])
+    .index("by_status", ["status"])
+    .index("by_category", ["category"]),
+
   // WhatsApp session credentials (Baileys auth state)
   whatsappSessions: defineTable({
     sessionId: v.string(), // Unique identifier for this session
