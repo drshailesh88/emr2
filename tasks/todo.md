@@ -68,6 +68,22 @@ Initialize project infrastructure and complete Week 1-2 foundations.
 - [x] Test production build locally (passed)
 - [x] All routes compiled: /, /login, /signup, /dashboard
 
+### Testing Tasks (Parallel Terminal B) ✅
+- [x] Set up Playwright testing framework
+  - playwright.config.ts configured for Next.js
+  - Test scripts added to package.json (test, test:ui, test:headed)
+- [x] Write smoke tests (7 tests)
+  - Home page, login page, signup page load correctly
+  - Navigation between pages works
+- [x] Add auth form validation tests (14 tests)
+  - Login: empty validation, input types, button state, links
+  - Signup: step progression, password validation, back button, profile fields
+- [x] Add authenticated dashboard tests (8 tests)
+  - Signup flow, header, 3 panels, search, AI input, logout
+  - Tests skipped by default (need RUN_AUTH_TESTS=true + Convex running)
+- Total: 24 passing tests, 7 skipped (authenticated)
+- Commits: d724c08, d7a2769
+
 ## Completed
 
 ### Task #1: Initialize Convex Project ✅
