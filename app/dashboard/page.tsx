@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
@@ -10,13 +11,24 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { api } from "@/convex/_generated/api";
-import { LogOut, Search, Send, User, Calendar, MessageSquare } from "lucide-react";
+import { Id } from "@/convex/_generated/dataModel";
+import { LogOut, Send, MessageSquare } from "lucide-react";
+import { PatientQueuePanel } from "@/components/emr/PatientQueuePanel";
 
 export default function DashboardPage() {
   const { signOut } = useAuthActions();
   const router = useRouter();
   const user = useQuery(api.users.current);
   const doctor = useQuery(api.users.currentDoctor);
+
+  // Selected patient state
+  const [selectedPatientId, setSelectedPatientId] = useState<Id<"patients"> | null>(null);
+
+  // Get selected patient details
+  const selectedPatient = useQuery(
+    api.patients.get,
+    selectedPatientId ? { id: selectedPatientId } : "skip"
+  );
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -65,45 +77,10 @@ export default function DashboardPage() {
       {/* Main 3-Panel Layout */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left Panel - Patient Queue */}
-        <aside className="w-64 border-r bg-card flex flex-col" data-testid="patient-queue-panel">
-          <div className="p-4 border-b">
-            <h2 className="font-semibold text-sm mb-3">Patient Queue</h2>
-            <div className="relative">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search patients..."
-                className="pl-8 h-9"
-                data-testid="patient-search"
-              />
-            </div>
-          </div>
-
-          <ScrollArea className="flex-1">
-            <div className="p-4 space-y-2">
-              <div className="text-xs font-medium text-muted-foreground mb-2">
-                <Calendar className="inline h-3 w-3 mr-1" />
-                Today
-              </div>
-
-              {/* Placeholder patient items */}
-              <PatientQueueItem
-                name="No patients yet"
-                time="--:--"
-                reason="Add patients to see them here"
-                isPlaceholder
-              />
-            </div>
-
-            <Separator className="my-2" />
-
-            <div className="p-4 space-y-2">
-              <div className="text-xs font-medium text-muted-foreground mb-2">
-                Pending Requests
-              </div>
-              <p className="text-xs text-muted-foreground">No pending requests</p>
-            </div>
-          </ScrollArea>
-        </aside>
+        <PatientQueuePanel
+          selectedPatientId={selectedPatientId}
+          onSelectPatient={setSelectedPatientId}
+        />
 
         {/* Middle Panel - Prescription Editor */}
         <main className="flex-1 flex flex-col overflow-hidden" data-testid="prescription-panel">
@@ -129,11 +106,21 @@ export default function DashboardPage() {
                       </div>
                       <div>
                         <p className="text-muted-foreground text-xs">Patient</p>
-                        <p className="text-muted-foreground italic">Select a patient</p>
+                        {selectedPatient ? (
+                          <p className="font-medium">{selectedPatient.name}</p>
+                        ) : (
+                          <p className="text-muted-foreground italic">Select a patient</p>
+                        )}
                       </div>
                       <div>
                         <p className="text-muted-foreground text-xs">Age / Sex</p>
-                        <p className="text-muted-foreground italic">--</p>
+                        {selectedPatient ? (
+                          <p>
+                            {selectedPatient.age ?? "--"} / {selectedPatient.sex ?? "--"}
+                          </p>
+                        ) : (
+                          <p className="text-muted-foreground italic">--</p>
+                        )}
                       </div>
                     </div>
 
@@ -141,7 +128,15 @@ export default function DashboardPage() {
 
                     <div>
                       <p className="text-xs font-medium text-muted-foreground mb-1">Chief Complaints</p>
-                      <p className="text-sm text-muted-foreground italic">Select a patient to start prescription</p>
+                      {selectedPatient ? (
+                        <p className="text-sm text-muted-foreground italic">
+                          Enter chief complaints or use AI Assistant
+                        </p>
+                      ) : (
+                        <p className="text-sm text-muted-foreground italic">
+                          Select a patient to start prescription
+                        </p>
+                      )}
                     </div>
 
                     <div>
@@ -187,13 +182,13 @@ export default function DashboardPage() {
 
               {/* Action buttons */}
               <div className="flex gap-2 mt-4 justify-end">
-                <Button variant="outline" size="sm" disabled>
+                <Button variant="outline" size="sm" disabled={!selectedPatient}>
                   Print
                 </Button>
-                <Button variant="outline" size="sm" disabled>
+                <Button variant="outline" size="sm" disabled={!selectedPatient}>
                   PDF
                 </Button>
-                <Button size="sm" disabled>
+                <Button size="sm" disabled={!selectedPatient}>
                   Send
                 </Button>
               </div>
@@ -217,7 +212,26 @@ export default function DashboardPage() {
             <div className="space-y-4">
               <div className="bg-muted rounded-lg p-3 text-sm">
                 <p className="font-medium text-xs text-muted-foreground mb-1">Secretary</p>
-                <p>Hello Dr. {doctor?.name || ""}! I&apos;m your AI secretary. Select a patient from the queue, and I&apos;ll help you draft prescriptions, review their history, and more.</p>
+                {selectedPatient ? (
+                  <p>
+                    Patient <strong>{selectedPatient.name}</strong> selected.
+                    {selectedPatient.age && ` Age: ${selectedPatient.age}.`}
+                    {selectedPatient.allergies && selectedPatient.allergies.length > 0 && (
+                      <span className="text-red-600"> Known allergies: {selectedPatient.allergies.join(", ")}.</span>
+                    )}
+                    {selectedPatient.comorbidities && selectedPatient.comorbidities.length > 0 && (
+                      <span> Comorbidities: {selectedPatient.comorbidities.join(", ")}.</span>
+                    )}
+                    <br /><br />
+                    How can I help you with this patient?
+                  </p>
+                ) : (
+                  <p>
+                    Hello Dr. {doctor?.name || ""}! I&apos;m your AI secretary.
+                    Select a patient from the queue, and I&apos;ll help you draft
+                    prescriptions, review their history, and more.
+                  </p>
+                )}
               </div>
 
               <p className="text-xs text-center text-muted-foreground">
@@ -239,58 +253,15 @@ export default function DashboardPage() {
               </Button>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" className="flex-1 text-xs" disabled>
+              <Button variant="outline" size="sm" className="flex-1 text-xs" disabled={!selectedPatient}>
                 Send WhatsApp
               </Button>
-              <Button variant="outline" size="sm" className="flex-1 text-xs" disabled>
+              <Button variant="outline" size="sm" className="flex-1 text-xs" disabled={!selectedPatient}>
                 Send Email
               </Button>
             </div>
           </div>
         </aside>
-      </div>
-    </div>
-  );
-}
-
-// Patient Queue Item Component
-function PatientQueueItem({
-  name,
-  time,
-  reason,
-  isActive = false,
-  isPlaceholder = false
-}: {
-  name: string;
-  time: string;
-  reason: string;
-  isActive?: boolean;
-  isPlaceholder?: boolean;
-}) {
-  return (
-    <div
-      className={`p-3 rounded-lg cursor-pointer transition-colors ${
-        isActive
-          ? "bg-primary/10 border border-primary"
-          : isPlaceholder
-            ? "bg-muted/50 border border-dashed border-muted-foreground/30"
-            : "hover:bg-muted"
-      }`}
-      data-testid="patient-queue-item"
-    >
-      <div className="flex items-center gap-2">
-        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-          isPlaceholder ? "bg-muted" : "bg-primary/10"
-        }`}>
-          <User className={`h-4 w-4 ${isPlaceholder ? "text-muted-foreground" : "text-primary"}`} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className={`text-sm font-medium truncate ${isPlaceholder ? "text-muted-foreground" : ""}`}>
-            {name}
-          </p>
-          <p className="text-xs text-muted-foreground truncate">{reason}</p>
-        </div>
-        <span className={`text-xs ${isPlaceholder ? "text-muted-foreground" : ""}`}>{time}</span>
       </div>
     </div>
   );

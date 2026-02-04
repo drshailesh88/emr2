@@ -23,6 +23,15 @@ Initialize project infrastructure and complete Week 1-2 foundations.
 
 ## In Progress
 
+### Task #9: Build Patient Queue Panel (Parallel Terminal A) ✅
+- [x] Create convex/patients.ts with CRUD + search queries
+- [x] Create convex/appointments.ts with today's appointments + pending requests
+- [x] Extract PatientQueuePanel to separate component
+- [x] Wire up real data from Convex
+- [x] Add patient selection state
+- [x] Write Playwright test
+- [x] Test passes → commit
+
 ### Task #8: Build 3-panel EMR Layout (Parallel Terminal A) ✅
 - [x] Create responsive 3-panel flexbox layout on /dashboard
 - [x] Left panel: Patient Queue (256px fixed width, scrollable)
