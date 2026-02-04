@@ -1,8 +1,8 @@
 "use client";
 
 import { useAuthActions } from "@convex-dev/auth/react";
-import { useMutation } from "convex/react";
-import { useState } from "react";
+import { useMutation, useQuery } from "convex/react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ import { api } from "@/convex/_generated/api";
 export default function SignupPage() {
   const { signIn } = useAuthActions();
   const createDoctor = useMutation(api.doctors.create);
+  const user = useQuery(api.users.current);
   const router = useRouter();
 
   const [formData, setFormData] = useState({
@@ -38,10 +39,39 @@ export default function SignupPage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState(1); // 1: Account, 2: Profile
+  const [waitingForAuth, setWaitingForAuth] = useState(false);
+  const profileDataRef = useRef<typeof formData | null>(null);
 
   const updateField = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
+
+  // Effect to create doctor profile once authenticated
+  useEffect(() => {
+    const createProfile = async () => {
+      if (waitingForAuth && user && profileDataRef.current) {
+        try {
+          await createDoctor({
+            name: profileDataRef.current.name,
+            phone: profileDataRef.current.phone,
+            email: profileDataRef.current.email,
+            specialty: profileDataRef.current.specialty,
+            qualifications: profileDataRef.current.qualifications,
+            clinicName: profileDataRef.current.clinicName,
+            clinicAddress: profileDataRef.current.clinicAddress,
+            registrationNumber: profileDataRef.current.registrationNumber,
+          });
+          router.push("/dashboard");
+        } catch (err) {
+          setError("Failed to create doctor profile. Please try again.");
+          console.error("Create doctor error:", err);
+          setWaitingForAuth(false);
+          setIsLoading(false);
+        }
+      }
+    };
+    createProfile();
+  }, [user, waitingForAuth, createDoctor, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,6 +95,9 @@ export default function SignupPage() {
     setIsLoading(true);
 
     try {
+      // Store profile data for after auth completes
+      profileDataRef.current = formData;
+
       // First, sign up the user
       const authFormData = new FormData();
       authFormData.set("email", formData.email);
@@ -73,23 +106,14 @@ export default function SignupPage() {
 
       await signIn("password", authFormData);
 
-      // Then create the doctor profile
-      await createDoctor({
-        name: formData.name,
-        phone: formData.phone,
-        email: formData.email,
-        specialty: formData.specialty,
-        qualifications: formData.qualifications,
-        clinicName: formData.clinicName,
-        clinicAddress: formData.clinicAddress,
-        registrationNumber: formData.registrationNumber,
-      });
+      // Set flag to wait for auth state to sync
+      setWaitingForAuth(true);
 
-      router.push("/dashboard");
+      // The useEffect above will handle creating the doctor profile
+      // once the user query returns the authenticated user
     } catch (err) {
       setError("Failed to create account. Email may already be registered.");
       console.error("Signup error:", err);
-    } finally {
       setIsLoading(false);
     }
   };
