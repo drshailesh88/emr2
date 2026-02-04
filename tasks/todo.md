@@ -87,6 +87,20 @@ Week 6-8: Implement Documents + Records functionality (file uploads, OCR, docume
   - retryProcessing / retryAllFailed - error recovery
 - [x] Update WhatsApp adapter to use ingestFromWhatsApp
 - [x] Auto-categorize documents from captions (lab_report, prescription, etc.)
+- [x] Commit: 78ce831
+
+### Task 3: Implement OCR with Claude Vision ✅
+- [x] Create convex/ocrService.ts with Claude Sonnet 4 Vision API
+- [x] processDocument - extract text, summary, category from images/PDFs
+- [x] processPendingDocuments - batch processing action
+- [x] extractTextOnly - for already-extracted text summarization
+- [x] Structured data extraction for:
+  - Lab reports (test values)
+  - Prescriptions (medications)
+  - ECG (findings)
+  - Echo reports (EF%, chambers)
+- [x] Add HTTP endpoints: POST /process-documents, GET /processing-stats
+- [x] Category classification: lab_report, prescription, discharge_summary, ecg, echo_report, angiography, imaging, medical_certificate, insurance_form, other
 
 ## Completed
 
