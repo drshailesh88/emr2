@@ -1,11 +1,79 @@
 # Doctor Secretary AI - Current TODO
 
 ## Session Goal
-Week 6-8: Implement Documents + Records functionality (file uploads, OCR, document management).
+Week 9-11: COMPLETED - Prescriptions and Web Dashboard enhancements.
 
-## Current Plan
+## Current Status
+All Week 9-11 tasks completed and pushed to GitHub.
 
-### Week 6-8: Documents + Records
+## Completed Tasks
+
+### Week 9-11: Prescriptions + Dashboard ✅
+
+#### Task 1: Enhance prescription data model ✅
+- [x] Review current prescription schema
+- [x] Add medication database/autocomplete support (lib/medications.ts)
+- [x] Add Hindi instruction generation rules
+- [x] Add prescription templates (6 cardiology templates)
+- Commit: d13049b
+
+#### Task 2: Build prescription draft workflow ✅
+- [x] Create AI-assisted prescription drafting
+- [x] Implement medication suggestions based on diagnosis (autocomplete)
+- [x] Add drug interaction warnings (5 types)
+- [x] Doctor review and approval flow (PDF generation)
+- Commit: 7dc2c35
+
+#### Task 3: Implement PDF prescription generation ✅
+- [x] Create prescription PDF template with clinic header
+- [x] Add bilingual instructions (English + Hindi)
+- [x] Generate professional letterhead format
+- Commit: f6d196d
+
+#### Task 4: Add prescription sending via WhatsApp ✅
+- [x] Send PDF prescription to patient via WhatsApp
+- [x] Add prescription history tracking
+- [x] WhatsApp adapter endpoints (/send-document, /send-prescription)
+- Commit: f6d196d
+
+#### Task 5: Build audit log viewer ✅
+- [x] Create audit log UI component (AuditLogPanel)
+- [x] Show all actions with timestamps
+- [x] Filter by action type, date, patient
+- [x] Export audit log functionality (CSV)
+- [x] Statistics view
+- Commit: 3232ffb
+
+#### Task 6: Enhance approvals view ✅
+- [x] Improve approval queue UI (3-tab layout)
+- [x] Add bulk approval actions
+- [x] Show approval history
+- [x] Add approval statistics
+- Commit: 2ad84a1
+
+#### Task 7: Add prescription templates ✅
+- [x] Create common prescription templates (lib/medications.ts)
+  - Hypertension (new & uncontrolled)
+  - Stable Angina
+  - Post-MI Follow-up
+  - Heart Failure
+  - Atrial Fibrillation
+- [x] Quick-apply templates to new prescriptions
+- Commit: 9135936
+
+#### Task 8: Write tests for prescription flow ✅
+- [x] Unit tests for medication search (tests/prescriptions.test.ts)
+- [x] Unit tests for drug interaction detection
+- [x] Tests for Hindi instruction generation
+- [x] Tests for template validation
+- [x] 63 unit tests passing (26 document + 37 prescription)
+- Commit: 9135936
+
+---
+
+## Completed
+
+### Week 6-8: Documents + Records (COMPLETE)
 
 #### Task 1: Implement file upload in WhatsApp adapter
 - [ ] Add media message handling in WhatsApp adapter
