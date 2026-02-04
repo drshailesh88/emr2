@@ -23,6 +23,16 @@ Initialize project infrastructure and complete Week 1-2 foundations.
 
 ## In Progress
 
+### Task #10: Build Prescription Editor Panel (Parallel Terminal A) ✅
+- [x] Extract PrescriptionEditorPanel to separate component
+- [x] Add form fields: chief complaints, diagnosis, medications
+- [x] Medications: add/remove with name, dosage, frequency, duration, instructions
+- [x] Investigations list with add/remove
+- [x] Follow-up text field
+- [x] Create convex/prescriptions.ts with create/update mutations
+- [x] Wire up form state with save draft functionality
+- [x] Test passes → commit
+
 ### Task #9: Build Patient Queue Panel (Parallel Terminal A) ✅
 - [x] Create convex/patients.ts with CRUD + search queries
 - [x] Create convex/appointments.ts with today's appointments + pending requests

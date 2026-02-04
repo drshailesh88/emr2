@@ -6,14 +6,13 @@ import { useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { LogOut, Send, MessageSquare } from "lucide-react";
 import { PatientQueuePanel } from "@/components/emr/PatientQueuePanel";
+import { PrescriptionEditorPanel } from "@/components/emr/PrescriptionEditorPanel";
 
 export default function DashboardPage() {
   const { signOut } = useAuthActions();
@@ -83,118 +82,10 @@ export default function DashboardPage() {
         />
 
         {/* Middle Panel - Prescription Editor */}
-        <main className="flex-1 flex flex-col overflow-hidden" data-testid="prescription-panel">
-          <ScrollArea className="flex-1 p-6">
-            <div className="max-w-3xl mx-auto">
-              {doctor ? (
-                <Card>
-                  <CardHeader className="pb-4">
-                    <div className="text-center border-b pb-4">
-                      <h2 className="text-lg font-bold uppercase">{doctor.name}</h2>
-                      <p className="text-sm text-muted-foreground">{doctor.qualifications}</p>
-                      <p className="text-sm font-medium">{doctor.specialty}</p>
-                      <p className="text-sm text-muted-foreground mt-1">{doctor.clinicName}</p>
-                      <p className="text-xs text-muted-foreground">{doctor.clinicAddress}</p>
-                      <p className="text-xs text-muted-foreground">Reg. No: {doctor.registrationNumber}</p>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-3 gap-4 text-sm">
-                      <div>
-                        <p className="text-muted-foreground text-xs">Date</p>
-                        <p>{new Date().toLocaleDateString("en-IN")}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground text-xs">Patient</p>
-                        {selectedPatient ? (
-                          <p className="font-medium">{selectedPatient.name}</p>
-                        ) : (
-                          <p className="text-muted-foreground italic">Select a patient</p>
-                        )}
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground text-xs">Age / Sex</p>
-                        {selectedPatient ? (
-                          <p>
-                            {selectedPatient.age ?? "--"} / {selectedPatient.sex ?? "--"}
-                          </p>
-                        ) : (
-                          <p className="text-muted-foreground italic">--</p>
-                        )}
-                      </div>
-                    </div>
-
-                    <Separator />
-
-                    <div>
-                      <p className="text-xs font-medium text-muted-foreground mb-1">Chief Complaints</p>
-                      {selectedPatient ? (
-                        <p className="text-sm text-muted-foreground italic">
-                          Enter chief complaints or use AI Assistant
-                        </p>
-                      ) : (
-                        <p className="text-sm text-muted-foreground italic">
-                          Select a patient to start prescription
-                        </p>
-                      )}
-                    </div>
-
-                    <div>
-                      <p className="text-xs font-medium text-muted-foreground mb-1">Diagnosis</p>
-                      <p className="text-sm text-muted-foreground italic">--</p>
-                    </div>
-
-                    <Separator />
-
-                    <div>
-                      <p className="text-lg font-serif mb-2">℞</p>
-                      <p className="text-sm text-muted-foreground italic">
-                        No medications added. Use the AI Assistant to draft a prescription.
-                      </p>
-                    </div>
-
-                    <Separator />
-
-                    <div>
-                      <p className="text-xs font-medium text-muted-foreground mb-1">Investigations Advised</p>
-                      <p className="text-sm text-muted-foreground italic">--</p>
-                    </div>
-
-                    <div>
-                      <p className="text-xs font-medium text-muted-foreground mb-1">Follow-up</p>
-                      <p className="text-sm text-muted-foreground italic">--</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              ) : (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Welcome!</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground">
-                      Your account is being set up. If you just signed up, please
-                      refresh the page.
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Action buttons */}
-              <div className="flex gap-2 mt-4 justify-end">
-                <Button variant="outline" size="sm" disabled={!selectedPatient}>
-                  Print
-                </Button>
-                <Button variant="outline" size="sm" disabled={!selectedPatient}>
-                  PDF
-                </Button>
-                <Button size="sm" disabled={!selectedPatient}>
-                  Send
-                </Button>
-              </div>
-            </div>
-          </ScrollArea>
-        </main>
+        <PrescriptionEditorPanel
+          doctor={doctor ?? null}
+          selectedPatient={selectedPatient ?? null}
+        />
 
         {/* Right Panel - AI Assistant */}
         <aside className="w-80 border-l bg-card flex flex-col" data-testid="ai-assistant-panel">
