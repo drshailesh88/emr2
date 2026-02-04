@@ -10,13 +10,14 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { LogOut, Users, MessageSquare, FileText, ClipboardList, Search } from "lucide-react";
+import { LogOut, Users, MessageSquare, FileText, ClipboardList, Search, History } from "lucide-react";
 import { PatientQueuePanel } from "@/components/emr/PatientQueuePanel";
 import { PrescriptionEditorPanel } from "@/components/emr/PrescriptionEditorPanel";
 import { AIAssistantPanel } from "@/components/emr/AIAssistantPanel";
 import { ApprovalQueuePanel } from "@/components/emr/ApprovalQueuePanel";
 import { DocumentsPanel } from "@/components/emr/DocumentsPanel";
 import { DocumentSearchPanel } from "@/components/emr/DocumentSearchPanel";
+import { AuditLogPanel } from "@/components/emr/AuditLogPanel";
 
 export default function DashboardPage() {
   const { signOut } = useAuthActions();
@@ -31,7 +32,7 @@ export default function DashboardPage() {
   const [leftPanelTab, setLeftPanelTab] = useState<"patients" | "approvals">("patients");
 
   // Middle panel tab state
-  const [middlePanelTab, setMiddlePanelTab] = useState<"prescription" | "documents" | "search">("prescription");
+  const [middlePanelTab, setMiddlePanelTab] = useState<"prescription" | "documents" | "search" | "audit">("prescription");
 
   // Get pending approvals count
   const pendingApprovals = useQuery(
@@ -133,8 +134,8 @@ export default function DashboardPage() {
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Middle Panel Tabs */}
           <div className="p-2 border-b bg-card">
-            <Tabs value={middlePanelTab} onValueChange={(v) => setMiddlePanelTab(v as "prescription" | "documents" | "search")}>
-              <TabsList className="grid grid-cols-3 w-80">
+            <Tabs value={middlePanelTab} onValueChange={(v) => setMiddlePanelTab(v as "prescription" | "documents" | "search" | "audit")}>
+              <TabsList className="grid grid-cols-4 w-96">
                 <TabsTrigger value="prescription" className="text-xs" data-testid="prescription-tab">
                   <ClipboardList className="h-3 w-3 mr-1" />
                   Prescription
@@ -146,6 +147,10 @@ export default function DashboardPage() {
                 <TabsTrigger value="search" className="text-xs" data-testid="search-tab">
                   <Search className="h-3 w-3 mr-1" />
                   Search
+                </TabsTrigger>
+                <TabsTrigger value="audit" className="text-xs" data-testid="audit-tab">
+                  <History className="h-3 w-3 mr-1" />
+                  Audit Log
                 </TabsTrigger>
               </TabsList>
             </Tabs>
@@ -162,9 +167,13 @@ export default function DashboardPage() {
               patientId={selectedPatientId}
               doctorId={doctor?._id ?? null}
             />
-          ) : (
+          ) : middlePanelTab === "search" ? (
             <DocumentSearchPanel
               doctorId={doctor?._id ?? null}
+            />
+          ) : (
+            <AuditLogPanel
+              doctor={doctor ?? null}
             />
           )}
         </div>
