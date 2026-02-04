@@ -4,11 +4,9 @@ import makeWASocket, {
   fetchLatestBaileysVersion,
   type WASocket,
   type BaileysEventMap,
-  type SignalKeyStore,
 } from "@whiskeysockets/baileys";
 import { Boom } from "@hapi/boom";
-import { useConvexAuthState } from "./auth-state";
-import { updateSessionStatus } from "./convex-client";
+import { useConvexAuthState, syncConnectionStatus } from "./auth-state";
 import { config } from "./config";
 import { logger } from "./logger";
 
@@ -39,23 +37,20 @@ export function getSocket(): WASocket | null {
 export async function connectWhatsApp(): Promise<void> {
   try {
     connectionStatus = "connecting";
-    await updateSessionStatus(config.sessionId, "connecting");
+    await syncConnectionStatus("connecting");
     logger.info("Connecting to WhatsApp...");
 
     // Get latest Baileys version
     const { version, isLatest } = await fetchLatestBaileysVersion();
     logger.info({ version, isLatest }, "Using Baileys version");
 
-    // Load auth state from Convex
+    // Load auth state (file-based with Convex sync)
     const { state, saveCreds } = await useConvexAuthState();
 
-    // Create socket
+    // Create socket with auth state from Baileys
     sock = makeWASocket({
       version,
-      auth: {
-        creds: state.creds,
-        keys: state.keys as SignalKeyStore,
-      },
+      auth: state,
       printQRInTerminal: true,
       logger,
       connectTimeoutMs: 60000,
@@ -72,7 +67,7 @@ export async function connectWhatsApp(): Promise<void> {
       if (qr) {
         qrCode = qr;
         connectionStatus = "qr_pending";
-        await updateSessionStatus(config.sessionId, "qr_pending", qr);
+        await syncConnectionStatus("qr_pending", qr);
         logger.info("QR code generated, waiting for scan...");
       }
 
@@ -94,15 +89,15 @@ export async function connectWhatsApp(): Promise<void> {
 
           if (reconnectAttempts <= config.reconnect.maxRetries) {
             logger.info({ attempt: reconnectAttempts, delay }, "Reconnecting...");
-            await updateSessionStatus(config.sessionId, "reconnecting");
+            await syncConnectionStatus("reconnecting");
             setTimeout(connectWhatsApp, delay);
           } else {
             logger.error("Max reconnection attempts reached");
-            await updateSessionStatus(config.sessionId, "disconnected");
+            await syncConnectionStatus("disconnected");
           }
         } else {
           logger.info("Logged out, not reconnecting");
-          await updateSessionStatus(config.sessionId, "logged_out");
+          await syncConnectionStatus("logged_out");
         }
       }
 
@@ -110,12 +105,12 @@ export async function connectWhatsApp(): Promise<void> {
         qrCode = null;
         connectionStatus = "connected";
         reconnectAttempts = 0;
-        await updateSessionStatus(config.sessionId, "connected");
+        await syncConnectionStatus("connected");
         logger.info("Connected to WhatsApp!");
       }
     });
 
-    // Handle credential updates - save to Convex
+    // Handle credential updates - save to files and sync to Convex
     sock.ev.on("creds.update", saveCreds);
 
     // Handle incoming messages
@@ -131,7 +126,7 @@ export async function connectWhatsApp(): Promise<void> {
   } catch (error) {
     logger.error({ error }, "Failed to connect to WhatsApp");
     connectionStatus = "disconnected";
-    await updateSessionStatus(config.sessionId, "error");
+    await syncConnectionStatus("error");
     throw error;
   }
 }
@@ -198,6 +193,6 @@ export async function disconnect(): Promise<void> {
     sock = null;
   }
   connectionStatus = "disconnected";
-  await updateSessionStatus(config.sessionId, "disconnected");
+  await syncConnectionStatus("disconnected");
   logger.info("Disconnected from WhatsApp");
 }

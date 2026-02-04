@@ -35,3 +35,7 @@ coverage/
 .playwright/
 test-results/
 playwright-report/
+
+# WhatsApp auth state (contains credentials)
+services/whatsapp-adapter/.auth/
+services/whatsapp-adapter/.env

@@ -6,6 +6,10 @@
  * Do not use in production without official WhatsApp Business API.
  */
 
+// Load environment variables first
+import * as dotenv from "dotenv";
+dotenv.config();
+
 import express from "express";
 import QRCode from "qrcode";
 import { config, validateConfig } from "./config";

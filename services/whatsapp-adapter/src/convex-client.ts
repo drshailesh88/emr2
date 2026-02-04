@@ -11,12 +11,18 @@ async function callConvex(
   const endpoint = type === "query" ? "query" : "mutation";
   const url = `${config.convexUrl}/api/${endpoint}`;
 
+  // Skip auth header for local development
+  const isLocalDev = config.convexUrl.includes("127.0.0.1") || config.convexUrl.includes("localhost");
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (!isLocalDev && config.convexDeployKey) {
+    headers["Authorization"] = `Convex ${config.convexDeployKey}`;
+  }
+
   const response = await fetch(url, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Convex ${config.convexDeployKey}`,
-    },
+    headers,
     body: JSON.stringify({
       path: functionPath,
       args,

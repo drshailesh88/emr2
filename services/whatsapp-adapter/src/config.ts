@@ -31,7 +31,9 @@ export function validateConfig(): void {
   if (!config.convexUrl) {
     throw new Error("CONVEX_URL environment variable is required");
   }
-  if (!config.convexDeployKey) {
-    throw new Error("CONVEX_DEPLOY_KEY environment variable is required");
+  // Deploy key only required for cloud deployments
+  const isLocalDev = config.convexUrl.includes("127.0.0.1") || config.convexUrl.includes("localhost");
+  if (!isLocalDev && !config.convexDeployKey) {
+    throw new Error("CONVEX_DEPLOY_KEY environment variable is required for cloud deployments");
   }
 }
