@@ -16,18 +16,29 @@ export const storeDocument = mutation({
     patientId: v.id("patients"),
     fileId: v.id("_storage"),
     fileName: v.string(),
-    fileType: v.string(), // "pdf" | "image" | "audio"
+    fileType: v.string(), // "pdf" | "image" | "audio" | "video"
+    mimeType: v.optional(v.string()),
+    fileSize: v.optional(v.number()),
     category: v.optional(v.string()), // "lab_report" | "prescription" | "discharge_summary" | "whatsapp_media"
+    sourceType: v.optional(v.string()), // "whatsapp" | "upload" | "email"
     messageId: v.optional(v.id("messages")), // Link to originating message if from WhatsApp
   },
   handler: async (ctx, args) => {
+    // Determine if this document needs OCR processing
+    const needsOcr = args.fileType === "image" || args.fileType === "pdf";
+
     const documentId = await ctx.db.insert("documents", {
       doctorId: args.doctorId,
       patientId: args.patientId,
       fileId: args.fileId,
       fileName: args.fileName,
       fileType: args.fileType,
+      mimeType: args.mimeType,
+      fileSize: args.fileSize,
       category: args.category,
+      sourceType: args.sourceType,
+      sourceMessageId: args.messageId,
+      processingStatus: needsOcr ? "pending" : "completed",
       uploadedAt: Date.now(),
     });
 
@@ -42,7 +53,7 @@ export const storeDocument = mutation({
       }
     }
 
-    return { documentId };
+    return { documentId, needsOcr };
   },
 });
 

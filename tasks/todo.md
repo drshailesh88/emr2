@@ -69,12 +69,24 @@ Week 6-8: Implement Documents + Records functionality (file uploads, OCR, docume
 
 ## In Progress
 
-### Task 1: Implement file upload in WhatsApp adapter
+### Task 1: Implement file upload in WhatsApp adapter ✅
 - [x] Add media message handling in WhatsApp adapter (getMediaDetails function)
 - [x] Download received images/PDFs from WhatsApp (downloadMedia function)
 - [x] Store media metadata in Convex (storeDocument mutation)
 - [x] Create convex/documents.ts with full CRUD operations
-- [ ] Test with manual image/PDF sends
+- [x] Commit: aee9904
+
+### Task 2: Create document ingestion service ✅
+- [x] Update schema with processing status, file size, MIME type, source tracking
+- [x] Create convex/documentIngestion.ts with:
+  - getPendingDocuments - queue of documents needing OCR
+  - markProcessing / completeProcessing / markFailed - state management
+  - ingestFromWhatsApp - specialized WhatsApp document handler
+  - ingestFromUpload - for direct dashboard uploads
+  - getProcessingStats - monitoring dashboard
+  - retryProcessing / retryAllFailed - error recovery
+- [x] Update WhatsApp adapter to use ingestFromWhatsApp
+- [x] Auto-categorize documents from captions (lab_report, prescription, etc.)
 
 ## Completed
 

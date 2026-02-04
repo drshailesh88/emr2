@@ -136,15 +136,26 @@ export default defineSchema({
     patientId: v.id("patients"),
     fileId: v.id("_storage"),
     fileName: v.string(),
-    fileType: v.string(), // "pdf" | "image" | "ecg"
-    category: v.optional(v.string()), // "lab_report" | "prescription" | "discharge_summary"
+    fileType: v.string(), // "pdf" | "image" | "audio" | "video"
+    mimeType: v.optional(v.string()), // Full MIME type for processing
+    fileSize: v.optional(v.number()), // File size in bytes
+    category: v.optional(v.string()), // "lab_report" | "prescription" | "discharge_summary" | "whatsapp_media"
+    // Processing status
+    processingStatus: v.optional(v.string()), // "pending" | "processing" | "completed" | "failed"
+    processingError: v.optional(v.string()),
+    processedAt: v.optional(v.number()),
+    // OCR/extraction results
     extractedText: v.optional(v.string()),
     summary: v.optional(v.string()),
+    // Source tracking
+    sourceType: v.optional(v.string()), // "whatsapp" | "upload" | "email"
+    sourceMessageId: v.optional(v.id("messages")), // Link to originating message
     uploadedAt: v.number(),
   })
     .index("by_doctor", ["doctorId"])
     .index("by_patient", ["patientId"])
-    .index("by_patient_category", ["patientId", "category"]),
+    .index("by_patient_category", ["patientId", "category"])
+    .index("by_processing_status", ["processingStatus"]),
 
   // Razorpay payment tracking
   payments: defineTable({

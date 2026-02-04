@@ -299,18 +299,37 @@ export async function uploadFile(buffer: Buffer, mimeType: string): Promise<stri
   }
 }
 
-// Store document metadata in Convex
+// Store document metadata in Convex (generic)
 export async function storeDocument(args: {
   doctorId: string;
   patientId: string;
   fileId: string;
   fileName: string;
   fileType: string;
+  mimeType?: string;
+  fileSize?: number;
   category?: string;
+  sourceType?: string;
   messageId?: string;
-}): Promise<{ documentId: string }> {
+}): Promise<{ documentId: string; needsOcr: boolean }> {
   const result = await callConvex("documents:storeDocument", args, "mutation");
-  return result as { documentId: string };
+  return result as { documentId: string; needsOcr: boolean };
+}
+
+// Ingest document from WhatsApp (specialized)
+export async function ingestFromWhatsApp(args: {
+  doctorId: string;
+  patientId: string;
+  fileId: string;
+  fileName: string;
+  fileType: string;
+  mimeType: string;
+  fileSize: number;
+  messageId?: string;
+  caption?: string;
+}): Promise<{ documentId: string; needsOcr: boolean; category: string }> {
+  const result = await callConvex("documentIngestion:ingestFromWhatsApp", args, "mutation");
+  return result as { documentId: string; needsOcr: boolean; category: string };
 }
 
 // Update document with extracted text (after OCR)

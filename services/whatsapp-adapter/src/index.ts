@@ -32,7 +32,7 @@ import {
   markNotificationSent,
   getPendingNotifications,
   uploadFile,
-  storeDocument,
+  ingestFromWhatsApp,
 } from "./convex-client";
 
 const app = express();
@@ -345,15 +345,17 @@ setMessageHandler(async (m) => {
                 fileType = "image";
               }
 
-              // Store document metadata
-              const docResult = await storeDocument({
+              // Ingest document through document ingestion service
+              const docResult = await ingestFromWhatsApp({
                 doctorId: result.doctorId,
                 patientId: result.patientId,
                 fileId,
                 fileName,
                 fileType,
-                category: "whatsapp_media",
+                mimeType: mediaDetails.mimeType || "application/octet-stream",
+                fileSize: mediaBuffer.length,
                 messageId: result.messageId,
+                caption: mediaDetails.caption || undefined,
               });
 
               logger.info(
@@ -362,8 +364,10 @@ setMessageHandler(async (m) => {
                   fileId,
                   fileName,
                   fileType,
+                  category: docResult.category,
+                  needsOcr: docResult.needsOcr,
                 },
-                "Document stored to Convex"
+                "Document ingested to Convex"
               );
             } else {
               logger.error("Failed to upload media to Convex storage");
