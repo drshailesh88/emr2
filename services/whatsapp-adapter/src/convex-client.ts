@@ -121,3 +121,30 @@ export async function markMessageFailed(
     "mutation"
   );
 }
+
+// Message intake - store incoming WhatsApp messages
+export async function storeIncomingMessage(args: {
+  whatsappMessageId: string;
+  senderJid: string;
+  content: string;
+  timestamp: number;
+  hasMedia: boolean;
+  mediaType?: string;
+}): Promise<{
+  messageId: string;
+  patientId: string | null;
+  conversationId: string;
+  doctorId?: string;
+  isNew: boolean;
+  isNewPatient?: boolean;
+}> {
+  const result = await callConvex("messageIntake:storeIncomingMessage", args, "mutation");
+  return result as {
+    messageId: string;
+    patientId: string | null;
+    conversationId: string;
+    doctorId?: string;
+    isNew: boolean;
+    isNewPatient?: boolean;
+  };
+}

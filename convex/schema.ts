@@ -63,16 +63,23 @@ export default defineSchema({
     content: v.string(),
     attachments: v.optional(v.array(v.id("_storage"))),
     timestamp: v.number(),
+    // WhatsApp tracking
+    whatsappMessageId: v.optional(v.string()), // Original WhatsApp message ID
+    direction: v.optional(v.string()), // "inbound" | "outbound"
     // Triage
     priority: v.optional(v.string()), // "P0" | "P1" | "P2" | "P3"
     intent: v.optional(v.string()),
+    triageCategory: v.optional(v.string()), // "emergency" | "clinical" | "admin"
     requiresApproval: v.boolean(),
     approved: v.optional(v.boolean()),
     approvedAt: v.optional(v.number()),
+    // Draft response (for approval workflow)
+    draftResponse: v.optional(v.string()),
   })
     .index("by_conversation", ["conversationId"])
     .index("by_conversation_time", ["conversationId", "timestamp"])
-    .index("by_approval_status", ["requiresApproval", "approved"]),
+    .index("by_approval_status", ["requiresApproval", "approved"])
+    .index("by_whatsapp_id", ["whatsappMessageId"]),
 
   // Appointment scheduling
   appointments: defineTable({

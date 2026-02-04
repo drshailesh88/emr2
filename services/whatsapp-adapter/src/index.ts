@@ -21,6 +21,7 @@ import {
   sendTextMessage,
   setMessageHandler,
 } from "./socket";
+import { storeIncomingMessage } from "./convex-client";
 
 const app = express();
 app.use(express.json());
@@ -112,32 +113,82 @@ app.post("/send", async (req, res) => {
   }
 });
 
-// Message handler - logs incoming messages
+// Message handler - stores incoming messages to Convex
 setMessageHandler(async (m) => {
   for (const msg of m.messages) {
     if (msg.key.fromMe) continue; // Skip own messages
 
     const sender = msg.key.remoteJid;
+    if (!sender) continue;
+
+    // Skip status broadcasts
+    if (sender === "status@broadcast") continue;
+
+    const whatsappMessageId = msg.key.id;
+    if (!whatsappMessageId) continue;
+
     const content =
       msg.message?.conversation ||
       msg.message?.extendedTextMessage?.text ||
       "[media/other]";
 
+    const hasMedia = !!(
+      msg.message?.imageMessage ||
+      msg.message?.documentMessage ||
+      msg.message?.audioMessage
+    );
+
+    // Determine media type
+    let mediaType: string | undefined;
+    if (msg.message?.imageMessage) mediaType = "image";
+    else if (msg.message?.documentMessage) mediaType = "document";
+    else if (msg.message?.audioMessage) mediaType = "audio";
+
+    // Get timestamp (handle both number and object formats)
+    let timestamp: number;
+    if (typeof msg.messageTimestamp === "number") {
+      timestamp = msg.messageTimestamp * 1000; // Convert to milliseconds
+    } else if (msg.messageTimestamp && typeof msg.messageTimestamp === "object") {
+      timestamp = (msg.messageTimestamp as { low: number }).low * 1000;
+    } else {
+      timestamp = Date.now();
+    }
+
     logger.info(
       {
         from: sender,
+        messageId: whatsappMessageId,
         content: content.substring(0, 100),
-        timestamp: msg.messageTimestamp,
-        hasMedia: !!(
-          msg.message?.imageMessage ||
-          msg.message?.documentMessage ||
-          msg.message?.audioMessage
-        ),
+        timestamp,
+        hasMedia,
+        mediaType,
       },
       "Received message"
     );
 
-    // TODO: In Task #4, this will store to Convex and trigger triage
+    // Store to Convex
+    try {
+      const result = await storeIncomingMessage({
+        whatsappMessageId,
+        senderJid: sender,
+        content,
+        timestamp,
+        hasMedia,
+        mediaType,
+      });
+
+      logger.info(
+        {
+          messageId: result.messageId,
+          conversationId: result.conversationId,
+          isNew: result.isNew,
+          isNewPatient: result.isNewPatient,
+        },
+        "Message stored to Convex"
+      );
+    } catch (error) {
+      logger.error({ error, whatsappMessageId }, "Failed to store message to Convex");
+    }
   }
 });
 
